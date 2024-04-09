@@ -4,6 +4,19 @@ import { v4 as uuidv4 } from 'uuid';
 const DEFAULT_PROTOCOL = 'https';
 const DEFAULT_HOST = 'iam.mtaylor.io';
 const DEFAULT_PORT = null;
+export var Action;
+(function (Action) {
+    Action["READ"] = "Read";
+    Action["WRITE"] = "Write";
+})(Action || (Action = {}));
+export var Effect;
+(function (Effect) {
+    Effect["ALLOW"] = "Allow";
+    Effect["DENY"] = "Deny";
+})(Effect || (Effect = {}));
+export function rule(effect, action, resource) {
+    return { action, effect, resource };
+}
 export class Principal {
     user;
     publicKey;
@@ -122,6 +135,30 @@ export class Groups {
     async listGroups(offset = 0, limit = 100) {
         const query = `?offset=${offset}&limit=${limit}`;
         const response = await this.iam.request('GET', '/groups', query);
+        return response.data;
+    }
+}
+export class Policies {
+    iam;
+    constructor(iam) {
+        this.iam = iam;
+    }
+    async createPolicy(hostname, statements) {
+        const id = uuidv4();
+        const policy = { id, hostname, statements };
+        const response = await this.iam.request('POST', '/policies', null, policy);
+        return response.data;
+    }
+    async deletePolicy(id) {
+        await this.iam.request('DELETE', `/policies/${id}`);
+    }
+    async getPolicy(id) {
+        const response = await this.iam.request('GET', `/policies/${id}`);
+        return response.data;
+    }
+    async listPolicies(offset = 0, limit = 100) {
+        const query = `?offset=${offset}&limit=${limit}`;
+        const response = await this.iam.request('GET', '/policies', query);
         return response.data;
     }
 }

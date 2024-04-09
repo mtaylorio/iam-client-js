@@ -1,4 +1,4 @@
-import IAM, { Users, Groups } from '../src/index';
+import IAM, { Users, Groups, Policies, Action, Effect, rule } from '../src/index';
 import sodium from 'libsodium-wrappers-sumo';
 
 
@@ -53,5 +53,40 @@ describe('IAM', () => {
     const groups = new Groups(iam);
     const groupList = await groups.listGroups()
     expect(groupList).toBeDefined();
+  });
+
+  it('should create a policy', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const policies = new Policies(iam);
+    const policy = await policies.createPolicy('iam.mtaylor.io', [
+      rule(Effect.ALLOW, Action.READ, '*'),
+      rule(Effect.ALLOW, Action.WRITE, '*')
+    ])
+    expect(policy).toBeDefined();
+    policies.deletePolicy(policy.id);
+  });
+
+  it('should get a policy', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const policies = new Policies(iam);
+    const policy = await policies.createPolicy('iam.mtaylor.io', [
+      rule(Effect.ALLOW, Action.READ, '*'),
+      rule(Effect.ALLOW, Action.WRITE, '*')
+    ])
+    const fetched = await policies.getPolicy(policy.id);
+    expect(fetched).toBeDefined();
+    policies.deletePolicy(policy.id);
+  });
+
+  it('should list policies', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const policies = new Policies(iam);
+    const policy = await policies.createPolicy('iam.mtaylor.io', [
+      rule(Effect.ALLOW, Action.READ, '*'),
+      rule(Effect.ALLOW, Action.WRITE, '*')
+    ])
+    const policyList = await policies.listPolicies();
+    expect(policyList).toBeDefined();
+    policies.deletePolicy(policy.id);
   });
 });

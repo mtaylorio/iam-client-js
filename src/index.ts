@@ -8,6 +8,32 @@ const DEFAULT_HOST = 'iam.mtaylor.io';
 const DEFAULT_PORT = null;
 
 
+export const enum Action {
+  READ = 'Read',
+  WRITE = 'Write',
+}
+
+
+export const enum Effect {
+  ALLOW = 'Allow',
+  DENY = 'Deny',
+}
+
+
+interface Rule {
+  action: Action,
+  effect: Effect,
+  resource: string,
+}
+
+
+interface Policy {
+  id: string,
+  hostname: string,
+  statements: Rule[],
+}
+
+
 interface User {
   id: string,
   email: string | null,
@@ -22,6 +48,11 @@ interface Group {
   name: string | null,
   users: string[],
   policies: string[],
+}
+
+
+export function rule(effect: Effect, action: Action, resource: string): Rule {
+  return { action, effect, resource };
 }
 
 
@@ -211,6 +242,37 @@ export class Groups {
   async listGroups(offset: number = 0, limit: number = 100): Promise<Group[]> {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/groups', query)
+    return response.data;
+  }
+}
+
+
+export class Policies {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
+  }
+
+  async createPolicy(hostname: string, statements: Rule[]): Promise<Policy> {
+    const id = uuidv4();
+    const policy = { id, hostname, statements };
+    const response = await this.iam.request('POST', '/policies', null, policy);
+    return response.data;
+  }
+
+  async deletePolicy(id: string): Promise<void> {
+    await this.iam.request('DELETE', `/policies/${id}`);
+  }
+
+  async getPolicy(id: string): Promise<string> {
+    const response = await this.iam.request('GET', `/policies/${id}`);
+    return response.data;
+  }
+
+  async listPolicies(offset: number = 0, limit: number = 100): Promise<string[]> {
+    const query = `?offset=${offset}&limit=${limit}`;
+    const response = await this.iam.request('GET', '/policies', query)
     return response.data;
   }
 }
