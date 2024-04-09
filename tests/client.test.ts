@@ -1,4 +1,4 @@
-import IAM, { Users, Groups, Policies, Action, Effect, rule } from '../src/index';
+import IAM, { Action, Effect, rule } from '../src/index';
 import sodium from 'libsodium-wrappers-sumo';
 
 
@@ -9,31 +9,31 @@ const secretKeyBase64 = process.env.MTAYLOR_IO_SECRET_KEY;
 describe('IAM', () => {
   it('should create a user', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const users = new Users(iam);
-    const principal = await users.createUser()
+    const users = iam.users();
+    const principal = await users.createUser();
     expect(principal).toBeDefined();
-    users.deleteUser(principal.user.id)
+    users.deleteUser(principal.user.id);
   });
 
   it('should get a user', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const users = new Users(iam);
-    const principal = await users.createUser()
-    const user = await users.getUser(principal.user.id)
+    const users = iam.users();
+    const principal = await users.createUser();
+    const user = await users.getUser(principal.user.id);
     expect(user).toBeDefined();
-    users.deleteUser(principal.user.id)
+    users.deleteUser(principal.user.id);
   });
 
   it('should list users', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const users = new Users(iam);
-    const userList = await users.listUsers()
+    const users = iam.users();
+    const userList = await users.listUsers();
     expect(userList).toBeDefined();
   });
 
   it('should create a group', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const groups = new Groups(iam);
+    const groups = iam.groups();
     const group = await groups.createGroup()
     expect(group).toBeDefined();
     groups.deleteGroup(group.id)
@@ -41,7 +41,7 @@ describe('IAM', () => {
 
   it('should get a group', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const groups = new Groups(iam);
+    const groups = iam.groups();
     const group = await groups.createGroup()
     const fetchedGroup = await groups.getGroup(group.id)
     expect(fetchedGroup).toBeDefined();
@@ -50,14 +50,14 @@ describe('IAM', () => {
 
   it('should list groups', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const groups = new Groups(iam);
-    const groupList = await groups.listGroups()
+    const groups = iam.groups();
+    const groupList = await groups.listGroups();
     expect(groupList).toBeDefined();
   });
 
   it('should create a policy', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const policies = new Policies(iam);
+    const policies = iam.policies();
     const policy = await policies.createPolicy('iam.mtaylor.io', [
       rule(Effect.ALLOW, Action.READ, '*'),
       rule(Effect.ALLOW, Action.WRITE, '*')
@@ -68,7 +68,7 @@ describe('IAM', () => {
 
   it('should get a policy', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const policies = new Policies(iam);
+    const policies = iam.policies();
     const policy = await policies.createPolicy('iam.mtaylor.io', [
       rule(Effect.ALLOW, Action.READ, '*'),
       rule(Effect.ALLOW, Action.WRITE, '*')
@@ -80,13 +80,8 @@ describe('IAM', () => {
 
   it('should list policies', async () => {
     const iam = await IAM.client(email, secretKeyBase64);
-    const policies = new Policies(iam);
-    const policy = await policies.createPolicy('iam.mtaylor.io', [
-      rule(Effect.ALLOW, Action.READ, '*'),
-      rule(Effect.ALLOW, Action.WRITE, '*')
-    ])
+    const policies = iam.policies();
     const policyList = await policies.listPolicies();
     expect(policyList).toBeDefined();
-    policies.deletePolicy(policy.id);
   });
 });

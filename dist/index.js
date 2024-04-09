@@ -84,6 +84,15 @@ export default class IAM {
             query ? query : '',
         ].join('');
     }
+    users() {
+        return new Users(this);
+    }
+    groups() {
+        return new Groups(this);
+    }
+    policies() {
+        return new Policies(this);
+    }
 }
 export class Users {
     iam;

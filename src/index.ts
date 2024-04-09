@@ -165,6 +165,18 @@ export default class IAM {
       query ? query : '',
     ].join('');
   }
+
+  users(): Users {
+    return new Users(this);
+  }
+
+  groups(): Groups {
+    return new Groups(this);
+  }
+
+  policies(): Policies {
+    return new Policies(this);
+  }
 }
 
 
