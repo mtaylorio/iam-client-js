@@ -3,6 +3,11 @@ import axios, { AxiosResponse } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 
+const DEFAULT_PROTOCOL = 'https';
+const DEFAULT_HOST = 'iam.mtaylor.io';
+const DEFAULT_PORT = null;
+
+
 interface User {
   id: string,
   email: string | null,
@@ -12,55 +17,32 @@ interface User {
 }
 
 
-interface CreateUserResult {
-  keypair: { publicKey: Uint8Array, privateKey: Uint8Array },
-  user: User,
+interface Group {
+  id: string,
+  name: string | null,
+  users: string[],
+  policies: string[],
 }
 
 
-export class Users {
-  private iam: IAM;
+export class Principal {
+  public readonly user: User;
+  public readonly publicKey: Uint8Array;
+  private privateKey: Uint8Array;
 
-  constructor(iam: IAM) {
-    this.iam = iam;
+  constructor(user: User, privateKey: Uint8Array, publicKey: Uint8Array | null = null) {
+    this.user = user;
+    this.privateKey = privateKey;
+    this.publicKey = publicKey ?
+      publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
   }
 
-  async createUser(
-    email: string | null = null,
-    groups: string[] = [],
-    policies: string[] = [],
-  ): Promise<CreateUserResult> {
-    const keypair = sodium.crypto_sign_keypair();
-
-    const publicKeys = [{
-      'description': 'default',
-      'key': sodium.to_base64(keypair.publicKey, sodium.base64_variants.ORIGINAL),
-    }]
-
-    const id = uuidv4();
-    const user = { id, email, groups, policies, publicKeys };
-
-    const response = await this.iam.request('POST', '/users', null, user);
-
-    return {
-      keypair,
-      user: response.data,
-    }
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    await this.iam.request('DELETE', `/users/${id}`);
-  }
-
-  async getUser(id: string): Promise<User> {
-    const response = await this.iam.request('GET', `/users/${id}`);
-    return response.data;
-  }
-
-  async listUsers(offset: number = 0, limit: number = 100): Promise<User[]> {
-    const query = `?offset=${offset}&limit=${limit}`;
-    const response = await this.iam.request('GET', '/users', query)
-    return response.data;
+  async client(
+    protocol: string = DEFAULT_PROTOCOL,
+    host: string = DEFAULT_HOST,
+    port: number | null = DEFAULT_PORT,
+  ): Promise<IAM> {
+    return await IAM.client(this.user.id, this.privateKey, protocol, host, port);
   }
 }
 
@@ -75,25 +57,28 @@ export default class IAM {
 
   constructor(
     userId: string,
-    secretKey: Uint8Array,
+    secretKey: Uint8Array | string,
     protocol: string,
     host: string,
     port: number | null
   ) {
+    const secretKeyBytes = typeof secretKey === 'string' ?
+      sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
+
     this.protocol = protocol;
     this.host = host;
     this.port = port;
     this.userId = userId;
-    this.secretKey = secretKey;
-    this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKey);
+    this.secretKey = secretKeyBytes;
+    this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
   }
 
   static async client(
     userId: string,
-    secretKey: Uint8Array,
-    protocol: string = 'https',
-    host: string = 'iam.mtaylor.io',
-    port: number | null = null,
+    secretKey: Uint8Array | string,
+    protocol: string = DEFAULT_PROTOCOL,
+    host: string = DEFAULT_HOST,
+    port: number | null = DEFAULT_PORT,
   ): Promise<IAM> {
     await sodium.ready; // Wait for libsodium to be ready
     return new IAM(userId, secretKey, protocol, host, port);
@@ -148,6 +133,85 @@ export default class IAM {
       path,
       query ? query : '',
     ].join('');
+  }
+}
+
+
+export class Users {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
+  }
+
+  async createUser(
+    email: string | null = null,
+    groups: string[] = [],
+    policies: string[] = [],
+  ): Promise<Principal> {
+    const keypair = sodium.crypto_sign_keypair();
+
+    const publicKeys = [{
+      'description': 'default',
+      'key': sodium.to_base64(keypair.publicKey, sodium.base64_variants.ORIGINAL),
+    }]
+
+    const id = uuidv4();
+    const user = { id, email, groups, policies, publicKeys };
+
+    const response = await this.iam.request('POST', '/users', null, user);
+
+    return new Principal(response.data, keypair.privateKey, keypair.publicKey);
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.iam.request('DELETE', `/users/${id}`);
+  }
+
+  async getUser(id: string): Promise<User> {
+    const response = await this.iam.request('GET', `/users/${id}`);
+    return response.data;
+  }
+
+  async listUsers(offset: number = 0, limit: number = 100): Promise<User[]> {
+    const query = `?offset=${offset}&limit=${limit}`;
+    const response = await this.iam.request('GET', '/users', query)
+    return response.data;
+  }
+}
+
+
+export class Groups {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
+  }
+
+  async createGroup(
+    name: string | null = null,
+    users: string[] = [],
+    policies: string[] = [],
+  ): Promise<Group> {
+    const id = uuidv4();
+    const group = { id, name, users, policies };
+    const response = await this.iam.request('POST', '/groups', null, group);
+    return response.data;
+  }
+
+  async deleteGroup(id: string): Promise<void> {
+    await this.iam.request('DELETE', `/groups/${id}`);
+  }
+
+  async getGroup(id: string): Promise<Group> {
+    const response = await this.iam.request('GET', `/groups/${id}`);
+    return response.data;
+  }
+
+  async listGroups(offset: number = 0, limit: number = 100): Promise<Group[]> {
+    const query = `?offset=${offset}&limit=${limit}`;
+    const response = await this.iam.request('GET', '/groups', query)
+    return response.data;
   }
 }
 

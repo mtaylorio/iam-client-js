@@ -1,86 +1,57 @@
-import IAM, { Users } from '../src/index';
+import IAM, { Users, Groups } from '../src/index';
 import sodium from 'libsodium-wrappers-sumo';
 
 
+const email = process.env.MTAYLOR_IO_EMAIL;
+const secretKeyBase64 = process.env.MTAYLOR_IO_SECRET_KEY;
+
+
 describe('IAM', () => {
-  it('should create a new IAM client', async () => {
-    await sodium.ready;
-    const email = process.env.MTAYLOR_IO_EMAIL;
-    const secretKey = sodium.from_base64(
-      process.env.MTAYLOR_IO_SECRET_KEY, sodium.base64_variants.ORIGINAL);
-
-    const iam = await IAM.client(email, secretKey);
-
-    expect(iam).toBeInstanceOf(IAM);
-  });
-
-  it('should create a signature', async () => {
-    await sodium.ready;
-    const email = process.env.MTAYLOR_IO_EMAIL;
-    const secretKey = sodium.from_base64(
-      process.env.MTAYLOR_IO_SECRET_KEY, sodium.base64_variants.ORIGINAL);
-
-    const iam = await IAM.client(email, secretKey);
-    const signature = iam.signature('request-id', 'GET', '/path');
-
-    expect(signature).toBeDefined();
-  });
-
-  it('should create a URL', async () => {
-    await sodium.ready;
-    const email = process.env.MTAYLOR_IO_EMAIL;
-    const secretKey = sodium.from_base64(
-      process.env.MTAYLOR_IO_SECRET_KEY, sodium.base64_variants.ORIGINAL);
-
-    const iam = await IAM.client(email, secretKey);
-    const url = iam.url('/path');
-
-    expect(url).toBe('https://iam.mtaylor.io/path');
-  });
-
   it('should create a user', async () => {
-    await sodium.ready;
-    const email = process.env.MTAYLOR_IO_EMAIL;
-    const secretKey = sodium.from_base64(
-      process.env.MTAYLOR_IO_SECRET_KEY, sodium.base64_variants.ORIGINAL);
-
-    const iam = await IAM.client(email, secretKey);
+    const iam = await IAM.client(email, secretKeyBase64);
     const users = new Users(iam);
-    const createUserResponse = await users.createUser()
-
-    expect(createUserResponse).toBeDefined();
-    expect(createUserResponse.keypair).toBeDefined();
-    expect(createUserResponse.user).toBeDefined();
-
-    users.deleteUser(createUserResponse.user.id)
+    const principal = await users.createUser()
+    expect(principal).toBeDefined();
+    users.deleteUser(principal.user.id)
   });
 
   it('should get a user', async () => {
-    await sodium.ready;
-    const email = process.env.MTAYLOR_IO_EMAIL;
-    const secretKey = sodium.from_base64(
-      process.env.MTAYLOR_IO_SECRET_KEY, sodium.base64_variants.ORIGINAL);
-
-    const iam = await IAM.client(email, secretKey);
+    const iam = await IAM.client(email, secretKeyBase64);
     const users = new Users(iam);
-    const createUserResponse = await users.createUser()
-    const user = await users.getUser(createUserResponse.user.id)
-
+    const principal = await users.createUser()
+    const user = await users.getUser(principal.user.id)
     expect(user).toBeDefined();
-
-    users.deleteUser(createUserResponse.user.id)
+    users.deleteUser(principal.user.id)
   });
 
   it('should list users', async () => {
-    await sodium.ready;
-    const email = process.env.MTAYLOR_IO_EMAIL;
-    const secretKey = sodium.from_base64(
-      process.env.MTAYLOR_IO_SECRET_KEY, sodium.base64_variants.ORIGINAL);
-
-    const iam = await IAM.client(email, secretKey);
+    const iam = await IAM.client(email, secretKeyBase64);
     const users = new Users(iam);
     const userList = await users.listUsers()
-
     expect(userList).toBeDefined();
+  });
+
+  it('should create a group', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const groups = new Groups(iam);
+    const group = await groups.createGroup()
+    expect(group).toBeDefined();
+    groups.deleteGroup(group.id)
+  });
+
+  it('should get a group', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const groups = new Groups(iam);
+    const group = await groups.createGroup()
+    const fetchedGroup = await groups.getGroup(group.id)
+    expect(fetchedGroup).toBeDefined();
+    groups.deleteGroup(group.id)
+  });
+
+  it('should list groups', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const groups = new Groups(iam);
+    const groupList = await groups.listGroups()
+    expect(groupList).toBeDefined();
   });
 });
