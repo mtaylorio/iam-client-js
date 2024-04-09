@@ -12,7 +12,7 @@ interface User {
 }
 
 
-interface CreateUserResponse {
+interface CreateUserResult {
   keypair: { publicKey: Uint8Array, privateKey: Uint8Array },
   user: User,
 }
@@ -29,7 +29,7 @@ export class Users {
     email: string | null = null,
     groups: string[] = [],
     policies: string[] = [],
-  ): Promise<CreateUserResponse> {
+  ): Promise<CreateUserResult> {
     const keypair = sodium.crypto_sign_keypair();
 
     const publicKeys = [{
@@ -46,6 +46,10 @@ export class Users {
       keypair,
       user: response.data,
     }
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.iam.request('DELETE', `/users/${id}`);
   }
 
   async getUser(id: string): Promise<User> {
@@ -158,7 +162,7 @@ function requestStringToSign(
     method,
     host,
     path,
-    query ? query : 'foo',
+    query ? query : '',
     requestId,
   ].join('\n'));
 }

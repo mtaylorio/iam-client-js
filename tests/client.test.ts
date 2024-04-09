@@ -51,6 +51,8 @@ describe('IAM', () => {
     expect(createUserResponse).toBeDefined();
     expect(createUserResponse.keypair).toBeDefined();
     expect(createUserResponse.user).toBeDefined();
+
+    users.deleteUser(createUserResponse.user.id)
   });
 
   it('should get a user', async () => {
@@ -65,6 +67,8 @@ describe('IAM', () => {
     const user = await users.getUser(createUserResponse.user.id)
 
     expect(user).toBeDefined();
+
+    users.deleteUser(createUserResponse.user.id)
   });
 
   it('should list users', async () => {
@@ -75,7 +79,6 @@ describe('IAM', () => {
 
     const iam = await IAM.client(email, secretKey);
     const users = new Users(iam);
-    const createUserResponse = await users.createUser()
     const userList = await users.listUsers()
 
     expect(userList).toBeDefined();
