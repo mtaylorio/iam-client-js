@@ -20,6 +20,18 @@ export class Users {
             user: response.data,
         };
     }
+    async deleteUser(id) {
+        await this.iam.request('DELETE', `/users/${id}`);
+    }
+    async getUser(id) {
+        const response = await this.iam.request('GET', `/users/${id}`);
+        return response.data;
+    }
+    async listUsers(offset = 0, limit = 100) {
+        const query = `?offset=${offset}&limit=${limit}`;
+        const response = await this.iam.request('GET', '/users', query);
+        return response.data;
+    }
 }
 export default class IAM {
     protocol;
@@ -41,13 +53,15 @@ export default class IAM {
         return new IAM(userId, secretKey, protocol, host, port);
     }
     async request(method, path, query = null, body = null) {
-        const url = this.url(path);
+        const url = this.url(path, query);
         const requestId = uuidv4();
+        const publicKey = sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL);
         const signature = this.signature(requestId, method, path, query);
         const headers = {
-            'X-MTaylor-IO-Request-ID': requestId,
+            'Authorization': `Signature ${signature}`,
             'X-MTaylor-IO-User-ID': this.userId,
-            'X-MTaylor-IO-Signature': signature,
+            'X-MTaylor-IO-Request-ID': requestId,
+            'X-MTaylor-IO-Public-Key': publicKey,
         };
         const response = await axios.request({
             method,
@@ -60,23 +74,25 @@ export default class IAM {
     signature(requestId, method, path, query = null) {
         return sodium.to_base64(sodium.crypto_sign_detached(requestStringToSign(method, this.host, path, query, requestId), this.secretKey), sodium.base64_variants.ORIGINAL);
     }
-    url(path) {
+    url(path, query = null) {
         return [
             this.protocol,
             '://',
             this.host,
             this.port ? `:${this.port}` : '',
             path,
+            query ? query : '',
         ].join('');
     }
 }
 function requestStringToSign(method, host, path, query, requestId) {
-    return sodium.from_string([
+    const s = [
         method,
         host,
         path,
-        query,
+        query ? query : '',
         requestId,
-    ].join('\n'));
+    ].join('\n');
+    return sodium.from_string(s);
 }
 //# sourceMappingURL=index.js.map

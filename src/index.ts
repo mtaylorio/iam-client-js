@@ -58,7 +58,7 @@ export class Users {
   }
 
   async listUsers(offset: number = 0, limit: number = 100): Promise<User[]> {
-    const query = `offset=${offset}&limit=${limit}`;
+    const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/users', query)
     return response.data;
   }
@@ -105,7 +105,7 @@ export default class IAM {
     query: string | null = null,
     body: any | null = null,
   ): Promise<AxiosResponse> {
-    const url = this.url(path);
+    const url = this.url(path, query);
     const requestId = uuidv4();
     const publicKey = sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL);
     const signature = this.signature(requestId, method, path, query);
@@ -139,13 +139,14 @@ export default class IAM {
     ), sodium.base64_variants.ORIGINAL);
   }
 
-  url(path: string): string {
+  url(path: string, query: string | null = null): string {
     return [
       this.protocol,
       '://',
       this.host,
       this.port ? `:${this.port}` : '',
       path,
+      query ? query : '',
     ].join('');
   }
 }
@@ -158,11 +159,12 @@ function requestStringToSign(
   query: string | null,
   requestId: string | null,
 ): Uint8Array {
-  return sodium.from_string([
+  const s = [
     method,
     host,
     path,
     query ? query : '',
     requestId,
-  ].join('\n'));
+  ].join('\n')
+  return sodium.from_string(s);
 }
