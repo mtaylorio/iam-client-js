@@ -86,10 +86,10 @@ export default class IAM {
   private secretKey: Uint8Array;
   private publicKey: Uint8Array;
 
-  public readonly user: UserClient;
-  public readonly users: UsersClient;
-  public readonly groups: GroupsClient;
-  public readonly policies: PoliciesClient;
+  public user: UserClient;
+  public users: UsersClient;
+  public groups: GroupsClient;
+  public policies: PoliciesClient;
 
   constructor(
     userId: string,
