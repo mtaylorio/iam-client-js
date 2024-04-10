@@ -100,4 +100,59 @@ describe('IAM', () => {
     await iam.user.attachPolicy(policy.id);
     iam.policies.deletePolicy(policy.id);
   });
+
+  it('should detach a policy from current user', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const policy = await iam.policies.createPolicy('iam.mtaylor.io', [
+      rule(Effect.ALLOW, Action.READ, '*'),
+      rule(Effect.ALLOW, Action.WRITE, '*')
+    ]);
+    await iam.user.attachPolicy(policy.id);
+    await iam.user.detachPolicy(policy.id);
+    iam.policies.deletePolicy(policy.id);
+  });
+
+  it('should attach a policy to a group', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const policy = await iam.policies.createPolicy('iam.mtaylor.io', [
+      rule(Effect.ALLOW, Action.READ, '*'),
+      rule(Effect.ALLOW, Action.WRITE, '*')
+    ]);
+    const group = await iam.groups.createGroup();
+    await iam.groups.attachPolicy(group.id, policy.id);
+    iam.policies.deletePolicy(policy.id);
+    iam.groups.deleteGroup(group.id);
+  });
+
+  it('should detach a policy from a group', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const policy = await iam.policies.createPolicy('iam.mtaylor.io', [
+      rule(Effect.ALLOW, Action.READ, '*'),
+      rule(Effect.ALLOW, Action.WRITE, '*')
+    ]);
+    const group = await iam.groups.createGroup();
+    await iam.groups.attachPolicy(group.id, policy.id);
+    await iam.groups.detachPolicy(group.id, policy.id);
+    iam.policies.deletePolicy(policy.id);
+    iam.groups.deleteGroup(group.id);
+  });
+
+  it('should add a user to a group', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const group = await iam.groups.createGroup();
+    const principal = await iam.users.createUser();
+    await iam.groups.addMember(group.id, principal.user.id);
+    iam.groups.deleteGroup(group.id);
+    iam.users.deleteUser(principal.user.id);
+  });
+
+  it('should remove a user from a group', async () => {
+    const iam = await IAM.client(email, secretKeyBase64);
+    const group = await iam.groups.createGroup();
+    const principal = await iam.users.createUser();
+    await iam.groups.addMember(group.id, principal.user.id);
+    await iam.groups.removeMember(group.id, principal.user.id);
+    iam.groups.deleteGroup(group.id);
+    iam.users.deleteUser(principal.user.id);
+  });
 });
