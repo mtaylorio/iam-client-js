@@ -38,6 +38,10 @@ export default class IAM {
     userId;
     secretKey;
     publicKey;
+    user;
+    users;
+    groups;
+    policies;
     constructor(userId, secretKey, protocol, host, port) {
         const secretKeyBytes = typeof secretKey === 'string' ?
             sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
@@ -47,6 +51,10 @@ export default class IAM {
         this.userId = userId;
         this.secretKey = secretKeyBytes;
         this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
+        this.user = new UserClient(this);
+        this.users = new UsersClient(this);
+        this.groups = new GroupsClient(this);
+        this.policies = new PoliciesClient(this);
     }
     static async client(userId, secretKey, protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
         await sodium.ready;
@@ -84,17 +92,27 @@ export default class IAM {
             query ? query : '',
         ].join('');
     }
-    users() {
-        return new Users(this);
+}
+export class UserClient {
+    iam;
+    constructor(iam) {
+        this.iam = iam;
     }
-    groups() {
-        return new Groups(this);
+    async getUser() {
+        const response = await this.iam.request('GET', '/user');
+        return response.data;
     }
-    policies() {
-        return new Policies(this);
+    async deleteUser() {
+        await this.iam.request('DELETE', '/user');
+    }
+    async attachPolicy(policyId) {
+        await this.iam.request('POST', `/user/policies/${policyId}`);
+    }
+    async detachPolicy(policyId) {
+        await this.iam.request('DELETE', `/user/policies/${policyId}`);
     }
 }
-export class Users {
+export class UsersClient {
     iam;
     constructor(iam) {
         this.iam = iam;
@@ -122,8 +140,14 @@ export class Users {
         const response = await this.iam.request('GET', '/users', query);
         return response.data;
     }
+    async attachPolicy(userId, policyId) {
+        await this.iam.request('POST', `/users/${userId}/policies/${policyId}`);
+    }
+    async detachPolicy(userId, policyId) {
+        await this.iam.request('DELETE', `/users/${userId}/policies/${policyId}`);
+    }
 }
-export class Groups {
+export class GroupsClient {
     iam;
     constructor(iam) {
         this.iam = iam;
@@ -146,8 +170,20 @@ export class Groups {
         const response = await this.iam.request('GET', '/groups', query);
         return response.data;
     }
+    async attachPolicy(groupId, policyId) {
+        await this.iam.request('POST', `/groups/${groupId}/policies/${policyId}`);
+    }
+    async detachPolicy(groupId, policyId) {
+        await this.iam.request('DELETE', `/groups/${groupId}/policies/${policyId}`);
+    }
+    async addMember(groupId, userId) {
+        await this.iam.request('POST', `/groups/${groupId}/members/${userId}`);
+    }
+    async removeMember(groupId, userId) {
+        await this.iam.request('DELETE', `/groups/${groupId}/members/${userId}`);
+    }
 }
-export class Policies {
+export class PoliciesClient {
     iam;
     constructor(iam) {
         this.iam = iam;
