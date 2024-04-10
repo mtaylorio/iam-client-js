@@ -86,6 +86,11 @@ export default class IAM {
   private secretKey: Uint8Array;
   private publicKey: Uint8Array;
 
+  public readonly user: UserClient;
+  public readonly users: UsersClient;
+  public readonly groups: GroupsClient;
+  public readonly policies: PoliciesClient;
+
   constructor(
     userId: string,
     secretKey: Uint8Array | string,
@@ -102,6 +107,11 @@ export default class IAM {
     this.userId = userId;
     this.secretKey = secretKeyBytes;
     this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
+
+    this.user = new UserClient(this);
+    this.users = new UsersClient(this);
+    this.groups = new GroupsClient(this);
+    this.policies = new PoliciesClient(this);
   }
 
   static async client(
@@ -165,22 +175,36 @@ export default class IAM {
       query ? query : '',
     ].join('');
   }
+}
 
-  users(): Users {
-    return new Users(this);
+
+export class UserClient {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
   }
 
-  groups(): Groups {
-    return new Groups(this);
+  async getUser(): Promise<User> {
+    const response = await this.iam.request('GET', '/user');
+    return response.data;
   }
 
-  policies(): Policies {
-    return new Policies(this);
+  async deleteUser(): Promise<void> {
+    await this.iam.request('DELETE', '/user');
+  }
+
+  async attachPolicy(policyId: string): Promise<void> {
+    await this.iam.request('POST', `/user/policies/${policyId}`);
+  }
+
+  async detachPolicy(policyId: string): Promise<void> {
+    await this.iam.request('DELETE', `/user/policies/${policyId}`);
   }
 }
 
 
-export class Users {
+export class UsersClient {
   private iam: IAM;
 
   constructor(iam: IAM) {
@@ -221,10 +245,18 @@ export class Users {
     const response = await this.iam.request('GET', '/users', query)
     return response.data;
   }
+
+  async attachPolicy(userId: string, policyId: string): Promise<void> {
+    await this.iam.request('POST', `/users/${userId}/policies/${policyId}`);
+  }
+
+  async detachPolicy(userId: string, policyId: string): Promise<void> {
+    await this.iam.request('DELETE', `/users/${userId}/policies/${policyId}`);
+  }
 }
 
 
-export class Groups {
+export class GroupsClient {
   private iam: IAM;
 
   constructor(iam: IAM) {
@@ -256,10 +288,26 @@ export class Groups {
     const response = await this.iam.request('GET', '/groups', query)
     return response.data;
   }
+
+  async attachPolicy(groupId: string, policyId: string): Promise<void> {
+    await this.iam.request('POST', `/groups/${groupId}/policies/${policyId}`);
+  }
+
+  async detachPolicy(groupId: string, policyId: string): Promise<void> {
+    await this.iam.request('DELETE', `/groups/${groupId}/policies/${policyId}`);
+  }
+
+  async addMember(groupId: string, userId: string): Promise<void> {
+    await this.iam.request('POST', `/groups/${groupId}/members/${userId}`);
+  }
+
+  async removeMember(groupId: string, userId: string): Promise<void> {
+    await this.iam.request('DELETE', `/groups/${groupId}/members/${userId}`);
+  }
 }
 
 
-export class Policies {
+export class PoliciesClient {
   private iam: IAM;
 
   constructor(iam: IAM) {
