@@ -27,8 +27,8 @@ export class Principal {
         this.publicKey = publicKey ?
             publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
     }
-    async client(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
-        return await IAM.client(this.user.id, this.privateKey, protocol, host, port);
+    async login(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
+        return await IAM.login(this.user.id, this.privateKey, null, protocol, host, port);
     }
 }
 export default class IAM {
@@ -38,11 +38,12 @@ export default class IAM {
     userId;
     secretKey;
     publicKey;
+    sessionToken = null;
     user;
     users;
     groups;
     policies;
-    constructor(userId, secretKey, protocol, host, port) {
+    constructor(userId, secretKey, sessionToken = null, protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
         const secretKeyBytes = typeof secretKey === 'string' ?
             sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
         this.protocol = protocol;
@@ -51,14 +52,20 @@ export default class IAM {
         this.userId = userId;
         this.secretKey = secretKeyBytes;
         this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
+        this.sessionToken = sessionToken;
         this.user = new UserClient(this);
         this.users = new UsersClient(this);
         this.groups = new GroupsClient(this);
         this.policies = new PoliciesClient(this);
     }
-    static async client(userId, secretKey, protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
+    static async login(userId, secretKey, sessionToken = null, protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
         await sodium.ready;
-        return new IAM(userId, secretKey, protocol, host, port);
+        const iam = new IAM(userId, secretKey, sessionToken, protocol, host, port);
+        if (sessionToken === null) {
+            const response = await iam.request('POST', '/user/sessions');
+            iam.sessionToken = response.data.token;
+        }
+        return iam;
     }
     async request(method, path, query = null, body = null) {
         const url = this.url(path, query);
@@ -71,6 +78,9 @@ export default class IAM {
             'X-MTaylor-IO-Request-ID': requestId,
             'X-MTaylor-IO-Public-Key': publicKey,
         };
+        if (this.sessionToken) {
+            headers['X-MTaylor-IO-Session-Token'] = this.sessionToken;
+        }
         const response = await axios.request({
             method,
             url,
@@ -80,7 +90,7 @@ export default class IAM {
         return response;
     }
     signature(requestId, method, path, query = null) {
-        return sodium.to_base64(sodium.crypto_sign_detached(requestStringToSign(method, this.host, path, query, requestId), this.secretKey), sodium.base64_variants.ORIGINAL);
+        return sodium.to_base64(sodium.crypto_sign_detached(requestStringToSign(method, this.host, path, query, requestId, this.sessionToken), this.secretKey), sodium.base64_variants.ORIGINAL);
     }
     url(path, query = null) {
         return [
@@ -207,14 +217,17 @@ export class PoliciesClient {
         return response.data;
     }
 }
-function requestStringToSign(method, host, path, query, requestId) {
+function requestStringToSign(method, host, path, query, requestId, sessionToken) {
     const s = [
         method,
         host,
         path,
         query ? query : '',
         requestId,
-    ].join('\n');
-    return sodium.from_string(s);
+    ];
+    if (sessionToken) {
+        s.push(sessionToken);
+    }
+    return sodium.from_string(s.join('\n'));
 }
 //# sourceMappingURL=index.js.map

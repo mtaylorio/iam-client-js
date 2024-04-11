@@ -68,12 +68,12 @@ export class Principal {
       publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
   }
 
-  async client(
+  async login(
     protocol: string = DEFAULT_PROTOCOL,
     host: string = DEFAULT_HOST,
     port: number | null = DEFAULT_PORT,
   ): Promise<IAM> {
-    return await IAM.client(this.user.id, this.privateKey, protocol, host, port);
+    return await IAM.login(this.user.id, this.privateKey, null, protocol, host, port);
   }
 }
 
@@ -85,6 +85,7 @@ export default class IAM {
   private userId: string;
   private secretKey: Uint8Array;
   private publicKey: Uint8Array;
+  private sessionToken: string | null = null;
 
   public user: UserClient;
   public users: UsersClient;
@@ -94,9 +95,10 @@ export default class IAM {
   constructor(
     userId: string,
     secretKey: Uint8Array | string,
-    protocol: string,
-    host: string,
-    port: number | null
+    sessionToken: string | null = null,
+    protocol: string = DEFAULT_PROTOCOL,
+    host: string = DEFAULT_HOST,
+    port: number | null = DEFAULT_PORT,
   ) {
     const secretKeyBytes = typeof secretKey === 'string' ?
       sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
@@ -107,6 +109,7 @@ export default class IAM {
     this.userId = userId;
     this.secretKey = secretKeyBytes;
     this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
+    this.sessionToken = sessionToken;
 
     this.user = new UserClient(this);
     this.users = new UsersClient(this);
@@ -114,15 +117,23 @@ export default class IAM {
     this.policies = new PoliciesClient(this);
   }
 
-  static async client(
+  static async login(
     userId: string,
     secretKey: Uint8Array | string,
+    sessionToken: string | null = null,
     protocol: string = DEFAULT_PROTOCOL,
     host: string = DEFAULT_HOST,
     port: number | null = DEFAULT_PORT,
   ): Promise<IAM> {
     await sodium.ready; // Wait for libsodium to be ready
-    return new IAM(userId, secretKey, protocol, host, port);
+    const iam = new IAM(userId, secretKey, sessionToken, protocol, host, port);
+
+    if (sessionToken === null) {
+      const response = await iam.request('POST', '/user/sessions');
+      iam.sessionToken = response.data.token;
+    }
+
+    return iam;
   }
 
   async request(
@@ -143,6 +154,10 @@ export default class IAM {
       'X-MTaylor-IO-Public-Key': publicKey,
     };
 
+    if (this.sessionToken) {
+      headers['X-MTaylor-IO-Session-Token'] = this.sessionToken;
+    }
+
     const response = await axios.request({
       method,
       url,
@@ -160,7 +175,7 @@ export default class IAM {
     query: string | null = null,
   ): string {
     return sodium.to_base64(sodium.crypto_sign_detached(
-      requestStringToSign(method, this.host, path, query, requestId),
+      requestStringToSign(method, this.host, path, query, requestId, this.sessionToken),
       this.secretKey,
     ), sodium.base64_variants.ORIGINAL);
   }
@@ -344,6 +359,7 @@ function requestStringToSign(
   path: string,
   query: string | null,
   requestId: string | null,
+  sessionToken: string | null,
 ): Uint8Array {
   const s = [
     method,
@@ -351,6 +367,11 @@ function requestStringToSign(
     path,
     query ? query : '',
     requestId,
-  ].join('\n')
-  return sodium.from_string(s);
+  ]
+
+  if (sessionToken) {
+    s.push(sessionToken);
+  }
+
+  return sodium.from_string(s.join('\n'));
 }
