@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
-    "module": "nodenext",
-    "noImplicitAny": false,
-    "removeComments": true,
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "esModuleInterop": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "lib": ["es2015"],
-    "baseUrl": ".",
-    "paths": {
-      "*": ["node_modules/*"]
-    }
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["**/*.spec.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

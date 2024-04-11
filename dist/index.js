@@ -4,16 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 const DEFAULT_PROTOCOL = 'https';
 const DEFAULT_HOST = 'iam.mtaylor.io';
 const DEFAULT_PORT = null;
-export var Action;
-(function (Action) {
-    Action["READ"] = "Read";
-    Action["WRITE"] = "Write";
-})(Action || (Action = {}));
-export var Effect;
-(function (Effect) {
-    Effect["ALLOW"] = "Allow";
-    Effect["DENY"] = "Deny";
-})(Effect || (Effect = {}));
 export function rule(effect, action, resource) {
     return { action, effect, resource };
 }
@@ -27,47 +17,52 @@ export class Principal {
         this.publicKey = publicKey ?
             publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
     }
-    async login(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
-        return await IAM.login(this.user.id, this.privateKey, null, protocol, host, port);
-    }
 }
 export default class IAM {
     protocol;
     host;
     port;
-    userId;
-    secretKey;
-    publicKey;
+    userId = null;
+    secretKey = null;
+    publicKey = null;
+    sessionId = null;
     sessionToken = null;
     user;
     users;
     groups;
     policies;
-    constructor(userId, secretKey, sessionToken = null, protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
-        const secretKeyBytes = typeof secretKey === 'string' ?
-            sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
+    constructor(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
         this.protocol = protocol;
         this.host = host;
         this.port = port;
-        this.userId = userId;
-        this.secretKey = secretKeyBytes;
-        this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
-        this.sessionToken = sessionToken;
         this.user = new UserClient(this);
         this.users = new UsersClient(this);
         this.groups = new GroupsClient(this);
         this.policies = new PoliciesClient(this);
     }
-    static async login(userId, secretKey, sessionToken = null, protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
+    async login(userId, secretKey, sessionToken = null) {
         await sodium.ready;
-        const iam = new IAM(userId, secretKey, sessionToken, protocol, host, port);
+        const secretKeyBytes = typeof secretKey === 'string' ?
+            sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
+        this.userId = userId;
+        this.secretKey = secretKeyBytes;
+        this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
         if (sessionToken === null) {
-            const response = await iam.request('POST', '/user/sessions');
-            iam.sessionToken = response.data.token;
+            const response = await this.request('POST', '/user/sessions');
+            this.sessionId = response.data.id;
+            this.sessionToken = response.data.token;
         }
-        return iam;
+    }
+    async logout() {
+        await this.request('DELETE', `/user/sessions/${this.sessionId}`);
+        this.userId = null;
+        this.secretKey = null;
+        this.publicKey = null;
+        this.sessionId = null;
+        this.sessionToken = null;
     }
     async request(method, path, query = null, body = null) {
+        await sodium.ready;
         const url = this.url(path, query);
         const requestId = uuidv4();
         const publicKey = sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL);
@@ -230,4 +225,3 @@ function requestStringToSign(method, host, path, query, requestId, sessionToken)
     }
     return sodium.from_string(s.join('\n'));
 }
-//# sourceMappingURL=index.js.map

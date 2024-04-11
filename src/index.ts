@@ -67,14 +67,6 @@ export class Principal {
     this.publicKey = publicKey ?
       publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
   }
-
-  async login(
-    protocol: string = DEFAULT_PROTOCOL,
-    host: string = DEFAULT_HOST,
-    port: number | null = DEFAULT_PORT,
-  ): Promise<IAM> {
-    return await IAM.login(this.user.id, this.privateKey, null, protocol, host, port);
-  }
 }
 
 
@@ -82,9 +74,11 @@ export default class IAM {
   private protocol: string;
   private host: string;
   private port: number | null;
-  private userId: string;
-  private secretKey: Uint8Array;
-  private publicKey: Uint8Array;
+
+  private userId: string | null = null;
+  private secretKey: Uint8Array | null = null;
+  private publicKey: Uint8Array | null = null;
+  private sessionId: string | null = null;
   private sessionToken: string | null = null;
 
   public user: UserClient;
@@ -93,23 +87,13 @@ export default class IAM {
   public policies: PoliciesClient;
 
   constructor(
-    userId: string,
-    secretKey: Uint8Array | string,
-    sessionToken: string | null = null,
     protocol: string = DEFAULT_PROTOCOL,
     host: string = DEFAULT_HOST,
     port: number | null = DEFAULT_PORT,
   ) {
-    const secretKeyBytes = typeof secretKey === 'string' ?
-      sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
-
     this.protocol = protocol;
     this.host = host;
     this.port = port;
-    this.userId = userId;
-    this.secretKey = secretKeyBytes;
-    this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
-    this.sessionToken = sessionToken;
 
     this.user = new UserClient(this);
     this.users = new UsersClient(this);
@@ -117,23 +101,33 @@ export default class IAM {
     this.policies = new PoliciesClient(this);
   }
 
-  static async login(
+  async login(
     userId: string,
     secretKey: Uint8Array | string,
     sessionToken: string | null = null,
-    protocol: string = DEFAULT_PROTOCOL,
-    host: string = DEFAULT_HOST,
-    port: number | null = DEFAULT_PORT,
-  ): Promise<IAM> {
-    await sodium.ready; // Wait for libsodium to be ready
-    const iam = new IAM(userId, secretKey, sessionToken, protocol, host, port);
+  ): Promise<void> {
+    await sodium.ready;
+    const secretKeyBytes = typeof secretKey === 'string' ?
+      sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
+
+    this.userId = userId;
+    this.secretKey = secretKeyBytes;
+    this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
 
     if (sessionToken === null) {
-      const response = await iam.request('POST', '/user/sessions');
-      iam.sessionToken = response.data.token;
+      const response = await this.request('POST', '/user/sessions');
+      this.sessionId = response.data.id;
+      this.sessionToken = response.data.token;
     }
+  }
 
-    return iam;
+  async logout(): Promise<void> {
+    await this.request('DELETE', `/user/sessions/${this.sessionId}`);
+    this.userId = null;
+    this.secretKey = null;
+    this.publicKey = null;
+    this.sessionId = null;
+    this.sessionToken = null;
   }
 
   async request(
@@ -142,6 +136,7 @@ export default class IAM {
     query: string | null = null,
     body: any | null = null,
   ): Promise<AxiosResponse> {
+    await sodium.ready;
     const url = this.url(path, query);
     const requestId = uuidv4();
     const publicKey = sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL);
