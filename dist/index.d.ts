@@ -57,14 +57,14 @@ export declare class Principal {
     constructor(user: User, privateKey: Uint8Array, publicKey?: Uint8Array | null);
 }
 export default class IAM {
-    private protocol;
-    private host;
-    private port;
-    private userId;
-    private secretKey;
-    private publicKey;
-    private sessionId;
-    private sessionToken;
+    protocol: string;
+    host: string;
+    port: number | null;
+    userId: string | null;
+    secretKey: Uint8Array | null;
+    publicKey: Uint8Array | null;
+    sessionId: string | null;
+    sessionToken: string | null;
     user: UserClient;
     users: UsersClient;
     groups: GroupsClient;

@@ -99,15 +99,15 @@ export class Principal {
 
 
 export default class IAM {
-  private protocol: string;
-  private host: string;
-  private port: number | null;
+  public protocol: string;
+  public host: string;
+  public port: number | null;
 
-  private userId: string | null = null;
-  private secretKey: Uint8Array | null = null;
-  private publicKey: Uint8Array | null = null;
-  private sessionId: string | null = null;
-  private sessionToken: string | null = null;
+  public userId: string | null = null;
+  public secretKey: Uint8Array | null = null;
+  public publicKey: Uint8Array | null = null;
+  public sessionId: string | null = null;
+  public sessionToken: string | null = null;
 
   public user: UserClient;
   public users: UsersClient;
