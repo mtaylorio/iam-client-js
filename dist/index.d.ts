@@ -7,33 +7,33 @@ export declare const enum Effect {
     ALLOW = "Allow",
     DENY = "Deny"
 }
-interface UserIdentityObject {
+export interface UserIdentityObject {
     id: string;
     email?: string;
 }
-interface GroupIdentityObject {
+export interface GroupIdentityObject {
     id: string;
     name?: string;
 }
-interface PolicyIdentityObject {
+export interface PolicyIdentityObject {
     id: string;
     name?: string;
 }
-type GroupIdentity = string | GroupIdentityObject;
-type UserIdentity = string | UserIdentityObject;
-type PolicyIdentity = string | PolicyIdentityObject;
-interface Rule {
+export type GroupIdentity = string | GroupIdentityObject;
+export type UserIdentity = string | UserIdentityObject;
+export type PolicyIdentity = string | PolicyIdentityObject;
+export interface Rule {
     action: Action;
     effect: Effect;
     resource: string;
 }
-interface Policy {
+export interface Policy {
     id: string;
     name: string | undefined;
     hostname: string;
     statements: Rule[];
 }
-interface User {
+export interface User {
     id: string;
     email: string | null;
     groups: GroupIdentity[];
@@ -43,7 +43,7 @@ interface User {
         key: string;
     }[];
 }
-interface Group {
+export interface Group {
     id: string;
     name: string | null;
     users: UserIdentity[];
@@ -115,4 +115,3 @@ export declare class PoliciesClient {
     getPolicy(id: string): Promise<string>;
     listPolicies(offset?: number, limit?: number): Promise<string[]>;
 }
-export {};

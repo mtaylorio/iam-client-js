@@ -20,41 +20,41 @@ export const enum Effect {
 }
 
 
-interface UserIdentityObject {
+export interface UserIdentityObject {
   id: string,
   email?: string,
 }
 
 
-interface GroupIdentityObject {
+export interface GroupIdentityObject {
   id: string,
   name?: string,
 }
 
 
-interface PolicyIdentityObject {
+export interface PolicyIdentityObject {
   id: string,
   name?: string,
 }
 
 
-type GroupIdentity = string | GroupIdentityObject;
+export type GroupIdentity = string | GroupIdentityObject;
 
 
-type UserIdentity = string | UserIdentityObject;
+export type UserIdentity = string | UserIdentityObject;
 
 
-type PolicyIdentity = string | PolicyIdentityObject;
+export type PolicyIdentity = string | PolicyIdentityObject;
 
 
-interface Rule {
+export interface Rule {
   action: Action,
   effect: Effect,
   resource: string,
 }
 
 
-interface Policy {
+export interface Policy {
   id: string,
   name: string | undefined,
   hostname: string,
@@ -62,7 +62,7 @@ interface Policy {
 }
 
 
-interface User {
+export interface User {
   id: string,
   email: string | null,
   groups: GroupIdentity[],
@@ -71,7 +71,7 @@ interface User {
 }
 
 
-interface Group {
+export interface Group {
   id: string,
   name: string | null,
   users: UserIdentity[],
