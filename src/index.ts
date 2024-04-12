@@ -104,7 +104,6 @@ export default class IAM {
   async login(
     userId: string,
     secretKey: Uint8Array | string,
-    sessionToken: string | null = null,
   ): Promise<void> {
     await sodium.ready;
     const secretKeyBytes = typeof secretKey === 'string' ?
@@ -114,11 +113,9 @@ export default class IAM {
     this.secretKey = secretKeyBytes;
     this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
 
-    if (sessionToken === null) {
-      const response = await this.request('POST', '/user/sessions');
-      this.sessionId = response.data.id;
-      this.sessionToken = response.data.token;
-    }
+    const response = await this.request('POST', '/user/sessions');
+    this.sessionId = response.data.id;
+    this.sessionToken = response.data.token;
   }
 
   async logout(): Promise<void> {
@@ -128,6 +125,27 @@ export default class IAM {
     this.publicKey = null;
     this.sessionId = null;
     this.sessionToken = null;
+  }
+
+  async refresh(
+    userId: string | null = null,
+    secretKey: Uint8Array | string | null = null,
+    sessionId: string | null = null,
+    sessionToken: string | null = null,
+  ): Promise<void> {
+    this.userId = userId ? userId : this.userId
+    this.secretKey = secretKey ? typeof secretKey === 'string' ?
+      sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) :
+      secretKey : this.secretKey
+    this.publicKey = this.secretKey ?
+      sodium.crypto_sign_ed25519_sk_to_pk(this.secretKey) : null
+    this.sessionId = sessionId ? sessionId : this.sessionId
+    this.sessionToken = sessionToken ? sessionToken : this.sessionToken
+
+    if (this.sessionId && this.sessionToken) {
+      const refreshUrl = `/user/sessions/${this.sessionId}/refresh`
+      const response = await this.request('POST', refreshUrl);
+    }
   }
 
   async request(

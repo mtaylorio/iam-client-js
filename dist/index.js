@@ -32,7 +32,7 @@ export default class IAM {
     groups;
     policies;
     constructor(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
-        this.protocol = protocol;
+        this.protocol = protocol.endsWith(':') ? protocol.slice(0, -1) : protocol;
         this.host = host;
         this.port = port;
         this.user = new UserClient(this);
@@ -40,18 +40,16 @@ export default class IAM {
         this.groups = new GroupsClient(this);
         this.policies = new PoliciesClient(this);
     }
-    async login(userId, secretKey, sessionToken = null) {
+    async login(userId, secretKey) {
         await sodium.ready;
         const secretKeyBytes = typeof secretKey === 'string' ?
             sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
         this.userId = userId;
         this.secretKey = secretKeyBytes;
         this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
-        if (sessionToken === null) {
-            const response = await this.request('POST', '/user/sessions');
-            this.sessionId = response.data.id;
-            this.sessionToken = response.data.token;
-        }
+        const response = await this.request('POST', '/user/sessions');
+        this.sessionId = response.data.id;
+        this.sessionToken = response.data.token;
     }
     async logout() {
         await this.request('DELETE', `/user/sessions/${this.sessionId}`);
@@ -60,6 +58,20 @@ export default class IAM {
         this.publicKey = null;
         this.sessionId = null;
         this.sessionToken = null;
+    }
+    async refresh(userId = null, secretKey = null, sessionId = null, sessionToken = null) {
+        this.userId = userId ? userId : this.userId;
+        this.secretKey = secretKey ? typeof secretKey === 'string' ?
+            sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) :
+            secretKey : this.secretKey;
+        this.publicKey = this.secretKey ?
+            sodium.crypto_sign_ed25519_sk_to_pk(this.secretKey) : null;
+        this.sessionId = sessionId ? sessionId : this.sessionId;
+        this.sessionToken = sessionToken ? sessionToken : this.sessionToken;
+        if (this.sessionId && this.sessionToken) {
+            const refreshUrl = `/user/sessions/${this.sessionId}/refresh`;
+            const response = await this.request('POST', refreshUrl);
+        }
     }
     async request(method, path, query = null, body = null) {
         await sodium.ready;
