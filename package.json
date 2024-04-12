@@ -9,7 +9,12 @@
     "uuid": "^9.0.1"
   },
   "exports": {
-    "import": "dist/index.js"
+    "." {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc",
