@@ -4,8 +4,11 @@ import sodium from 'libsodium-wrappers-sumo';
 
 const email = process.env.MTAYLOR_IO_EMAIL;
 const secretKeyBase64 = process.env.MTAYLOR_IO_SECRET_KEY;
+const url = process.env.MTAYLOR_IO_URL || 'https://iam.mtaylor.io';
 
-const iam = new IAM('http', 'localhost', 8080);
+const iamUrl = new URL(url);
+
+const iam = new IAM(iamUrl.protocol, iamUrl.hostname, parseInt(iamUrl.port));
 
 
 beforeAll(async () => {

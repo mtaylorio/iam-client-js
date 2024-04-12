@@ -91,7 +91,7 @@ export default class IAM {
     host: string = DEFAULT_HOST,
     port: number | null = DEFAULT_PORT,
   ) {
-    this.protocol = protocol;
+    this.protocol = protocol.endsWith(':') ? protocol.slice(0, -1) : protocol;
     this.host = host;
     this.port = port;
 
