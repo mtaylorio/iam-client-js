@@ -381,7 +381,7 @@ export class PoliciesClient {
     await this.iam.request('DELETE', `/policies/${id}`);
   }
 
-  async getPolicy(id: string): Promise<string> {
+  async getPolicy(id: string): Promise<Policy> {
     const response = await this.iam.request('GET', `/policies/${id}`);
     return response.data;
   }

@@ -112,6 +112,6 @@ export declare class PoliciesClient {
     constructor(iam: IAM);
     createPolicy(hostname: string, statements: Rule[]): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
-    getPolicy(id: string): Promise<string>;
+    getPolicy(id: string): Promise<Policy>;
     listPolicies(offset?: number, limit?: number): Promise<string[]>;
 }
