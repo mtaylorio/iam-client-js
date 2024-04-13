@@ -91,7 +91,7 @@ export declare class UsersClient {
     createUser(email?: string | null, groups?: string[], policies?: string[]): Promise<Principal>;
     deleteUser(id: string): Promise<void>;
     getUser(id: string): Promise<User>;
-    listUsers(offset?: number, limit?: number): Promise<User[]>;
+    listUsers(offset?: number, limit?: number): Promise<UserIdentity[]>;
     attachPolicy(userId: string, policyId: string): Promise<void>;
     detachPolicy(userId: string, policyId: string): Promise<void>;
 }
@@ -101,7 +101,7 @@ export declare class GroupsClient {
     createGroup(name?: string | null, users?: string[], policies?: string[]): Promise<Group>;
     deleteGroup(id: string): Promise<void>;
     getGroup(id: string): Promise<Group>;
-    listGroups(offset?: number, limit?: number): Promise<Group[]>;
+    listGroups(offset?: number, limit?: number): Promise<GroupIdentity[]>;
     attachPolicy(groupId: string, policyId: string): Promise<void>;
     detachPolicy(groupId: string, policyId: string): Promise<void>;
     addMember(groupId: string, userId: string): Promise<void>;

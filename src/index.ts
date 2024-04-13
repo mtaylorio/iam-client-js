@@ -296,7 +296,7 @@ export class UsersClient {
     return response.data;
   }
 
-  async listUsers(offset: number = 0, limit: number = 100): Promise<User[]> {
+  async listUsers(offset: number = 0, limit: number = 100): Promise<UserIdentity[]> {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/users', query)
     return response.data;
@@ -339,7 +339,7 @@ export class GroupsClient {
     return response.data;
   }
 
-  async listGroups(offset: number = 0, limit: number = 100): Promise<Group[]> {
+  async listGroups(offset: number = 0, limit: number = 100): Promise<GroupIdentity[]> {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/groups', query)
     return response.data;
