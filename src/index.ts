@@ -386,7 +386,7 @@ export class PoliciesClient {
     return response.data;
   }
 
-  async listPolicies(offset: number = 0, limit: number = 100): Promise<string[]> {
+  async listPolicies(offset: number = 0, limit: number = 100): Promise<PolicyIdentity[]> {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/policies', query)
     return response.data;

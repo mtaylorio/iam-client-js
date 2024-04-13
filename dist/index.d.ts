@@ -113,5 +113,5 @@ export declare class PoliciesClient {
     createPolicy(hostname: string, statements: Rule[]): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
     getPolicy(id: string): Promise<Policy>;
-    listPolicies(offset?: number, limit?: number): Promise<string[]>;
+    listPolicies(offset?: number, limit?: number): Promise<PolicyIdentity[]>;
 }
