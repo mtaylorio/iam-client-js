@@ -3,10 +3,12 @@ export declare const enum Action {
     READ = "Read",
     WRITE = "Write"
 }
+export declare const PolicyActions: Action[];
 export declare const enum Effect {
     ALLOW = "Allow",
     DENY = "Deny"
 }
+export declare const PolicyEffects: Effect[];
 export interface UserIdentityObject {
     id: string;
     email?: string;

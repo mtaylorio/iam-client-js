@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 const DEFAULT_PROTOCOL = 'https';
 const DEFAULT_HOST = 'iam.mtaylor.io';
 const DEFAULT_PORT = null;
+export const PolicyActions = ["Read" /* Action.READ */, "Write" /* Action.WRITE */];
+export const PolicyEffects = ["Allow" /* Effect.ALLOW */, "Deny" /* Effect.DENY */];
 export function rule(effect, action, resource) {
     return { action, effect, resource };
 }

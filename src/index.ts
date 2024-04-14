@@ -14,10 +14,16 @@ export const enum Action {
 }
 
 
+export const PolicyActions = [Action.READ, Action.WRITE];
+
+
 export const enum Effect {
   ALLOW = 'Allow',
   DENY = 'Deny',
 }
+
+
+export const PolicyEffects = [Effect.ALLOW, Effect.DENY];
 
 
 export interface UserIdentityObject {
