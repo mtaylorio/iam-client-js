@@ -71,20 +71,25 @@ describe('IAM', () => {
 
   it('should create a policy', async () => {
     const policies = iam.policies;
-    const policy = await policies.createPolicy('iam.mtaylor.io', [
-      rule(Effect.ALLOW, Action.READ, '*'),
-      rule(Effect.ALLOW, Action.WRITE, '*')
-    ])
+    const policy = await policies.createPolicy({
+      hostname: 'iam.mtaylor.io',
+      statements: [
+        rule(Effect.ALLOW, Action.READ, '*'),
+        rule(Effect.ALLOW, Action.WRITE, '*')
+      ]
+    })
     expect(policy).toBeDefined();
     policies.deletePolicy(policy.id);
   });
 
   it('should get a policy', async () => {
     const policies = iam.policies;
-    const policy = await policies.createPolicy('iam.mtaylor.io', [
-      rule(Effect.ALLOW, Action.READ, '*'),
-      rule(Effect.ALLOW, Action.WRITE, '*')
-    ])
+    const policy = await policies.createPolicy({
+      hostname: 'iam.mtaylor.io', statements: [
+        rule(Effect.ALLOW, Action.READ, '*'),
+        rule(Effect.ALLOW, Action.WRITE, '*')
+      ]
+    })
     const fetched = await policies.getPolicy(policy.id);
     expect(fetched).toBeDefined();
     policies.deletePolicy(policy.id);
@@ -97,29 +102,38 @@ describe('IAM', () => {
   });
 
   it('should attach a policy to current user', async () => {
-    const policy = await iam.policies.createPolicy('iam.mtaylor.io', [
-      rule(Effect.ALLOW, Action.READ, '*'),
-      rule(Effect.ALLOW, Action.WRITE, '*')
-    ]);
+    const policy = await iam.policies.createPolicy({
+      hostname: 'iam.mtaylor.io',
+      statements: [
+        rule(Effect.ALLOW, Action.READ, '*'),
+        rule(Effect.ALLOW, Action.WRITE, '*')
+      ]
+    });
     await iam.user.attachPolicy(policy.id);
     iam.policies.deletePolicy(policy.id);
   });
 
   it('should detach a policy from current user', async () => {
-    const policy = await iam.policies.createPolicy('iam.mtaylor.io', [
-      rule(Effect.ALLOW, Action.READ, '*'),
-      rule(Effect.ALLOW, Action.WRITE, '*')
-    ]);
+    const policy = await iam.policies.createPolicy({
+      hostname: 'iam.mtaylor.io',
+      statements: [
+        rule(Effect.ALLOW, Action.READ, '*'),
+        rule(Effect.ALLOW, Action.WRITE, '*')
+      ]
+    });
     await iam.user.attachPolicy(policy.id);
     await iam.user.detachPolicy(policy.id);
     iam.policies.deletePolicy(policy.id);
   });
 
   it('should attach a policy to a group', async () => {
-    const policy = await iam.policies.createPolicy('iam.mtaylor.io', [
-      rule(Effect.ALLOW, Action.READ, '*'),
-      rule(Effect.ALLOW, Action.WRITE, '*')
-    ]);
+    const policy = await iam.policies.createPolicy({
+      hostname: 'iam.mtaylor.io',
+      statements: [
+        rule(Effect.ALLOW, Action.READ, '*'),
+        rule(Effect.ALLOW, Action.WRITE, '*')
+      ]
+    });
     const group = await iam.groups.createGroup();
     await iam.groups.attachPolicy(group.id, policy.id);
     iam.policies.deletePolicy(policy.id);
@@ -127,10 +141,13 @@ describe('IAM', () => {
   });
 
   it('should detach a policy from a group', async () => {
-    const policy = await iam.policies.createPolicy('iam.mtaylor.io', [
-      rule(Effect.ALLOW, Action.READ, '*'),
-      rule(Effect.ALLOW, Action.WRITE, '*')
-    ]);
+    const policy = await iam.policies.createPolicy({
+      hostname: 'iam.mtaylor.io',
+      statements: [
+        rule(Effect.ALLOW, Action.READ, '*'),
+        rule(Effect.ALLOW, Action.WRITE, '*')
+      ]
+    });
     const group = await iam.groups.createGroup();
     await iam.groups.attachPolicy(group.id, policy.id);
     await iam.groups.detachPolicy(group.id, policy.id);

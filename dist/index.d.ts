@@ -33,6 +33,11 @@ export interface Policy {
     hostname: string;
     statements: Rule[];
 }
+export interface PolicySpec {
+    name?: string;
+    hostname: string;
+    statements: Rule[];
+}
 export interface User {
     id: string;
     email: string | null;
@@ -110,7 +115,7 @@ export declare class GroupsClient {
 export declare class PoliciesClient {
     private iam;
     constructor(iam: IAM);
-    createPolicy(hostname: string, statements: Rule[]): Promise<Policy>;
+    createPolicy(spec: PolicySpec): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
     getPolicy(id: string): Promise<Policy>;
     listPolicies(offset?: number, limit?: number): Promise<PolicyIdentity[]>;

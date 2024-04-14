@@ -205,9 +205,13 @@ export class PoliciesClient {
     constructor(iam) {
         this.iam = iam;
     }
-    async createPolicy(hostname, statements) {
+    async createPolicy(spec) {
         const id = uuidv4();
+        const { hostname, statements } = spec;
         const policy = { id, hostname, statements };
+        if (spec.name) {
+            policy['name'] = spec.name;
+        }
         const response = await this.iam.request('POST', '/policies', null, policy);
         return response.data;
     }

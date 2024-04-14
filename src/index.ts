@@ -62,6 +62,13 @@ export interface Policy {
 }
 
 
+export interface PolicySpec {
+  name?: string,
+  hostname: string,
+  statements: Rule[],
+}
+
+
 export interface User {
   id: string,
   email: string | null,
@@ -370,9 +377,15 @@ export class PoliciesClient {
     this.iam = iam;
   }
 
-  async createPolicy(hostname: string, statements: Rule[]): Promise<Policy> {
+  async createPolicy(spec: PolicySpec): Promise<Policy> {
     const id = uuidv4();
+    const { hostname, statements } = spec;
     const policy = { id, hostname, statements };
+
+    if (spec.name) {
+      policy['name'] = spec.name;
+    }
+
     const response = await this.iam.request('POST', '/policies', null, policy);
     return response.data;
   }
