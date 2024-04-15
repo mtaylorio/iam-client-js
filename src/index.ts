@@ -100,13 +100,19 @@ export function rule(effect: Effect, action: Action, resource: string): Rule {
 export class Principal {
   public readonly user: User;
   public readonly publicKey: Uint8Array;
-  private privateKey: Uint8Array;
+  public readonly privateKey: Uint8Array;
+  public readonly publicKeyBase64: string;
+  public readonly privateKeyBase64: string;
 
   constructor(user: User, privateKey: Uint8Array, publicKey: Uint8Array | null = null) {
     this.user = user;
     this.privateKey = privateKey;
     this.publicKey = publicKey ?
       publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
+    this.publicKeyBase64 = sodium.to_base64(
+      this.publicKey, sodium.base64_variants.ORIGINAL);
+    this.privateKeyBase64 = sodium.to_base64(
+      this.privateKey, sodium.base64_variants.ORIGINAL);
   }
 }
 

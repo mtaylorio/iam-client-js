@@ -13,11 +13,15 @@ export class Principal {
     user;
     publicKey;
     privateKey;
+    publicKeyBase64;
+    privateKeyBase64;
     constructor(user, privateKey, publicKey = null) {
         this.user = user;
         this.privateKey = privateKey;
         this.publicKey = publicKey ?
             publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
+        this.publicKeyBase64 = sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL);
+        this.privateKeyBase64 = sodium.to_base64(this.privateKey, sodium.base64_variants.ORIGINAL);
     }
 }
 export default class IAM {

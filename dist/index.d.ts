@@ -60,7 +60,9 @@ export declare function rule(effect: Effect, action: Action, resource: string): 
 export declare class Principal {
     readonly user: User;
     readonly publicKey: Uint8Array;
-    private privateKey;
+    readonly privateKey: Uint8Array;
+    readonly publicKeyBase64: string;
+    readonly privateKeyBase64: string;
     constructor(user: User, privateKey: Uint8Array, publicKey?: Uint8Array | null);
 }
 export default class IAM {
