@@ -92,6 +92,30 @@ export interface Group {
 }
 
 
+export interface UsersResponse {
+  items: UserIdentity[],
+  offset: number,
+  limit: number,
+  total: number,
+}
+
+
+export interface GroupsResponse {
+  items: GroupIdentity[],
+  offset: number,
+  limit: number,
+  total: number,
+}
+
+
+export interface PoliciesResponse {
+  items: PolicyIdentity[],
+  offset: number,
+  limit: number,
+  total: number,
+}
+
+
 export function rule(effect: Effect, action: Action, resource: string): Rule {
   return { action, effect, resource };
 }
@@ -315,7 +339,7 @@ export class UsersClient {
     return response.data;
   }
 
-  async listUsers(offset: number = 0, limit: number = 100): Promise<UserIdentity[]> {
+  async listUsers(offset: number = 0, limit: number = 100): Promise<UsersResponse> {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/users', query)
     return response.data;
@@ -358,7 +382,7 @@ export class GroupsClient {
     return response.data;
   }
 
-  async listGroups(offset: number = 0, limit: number = 100): Promise<GroupIdentity[]> {
+  async listGroups(offset: number = 0, limit: number = 100): Promise<GroupsResponse> {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/groups', query)
     return response.data;
@@ -411,7 +435,7 @@ export class PoliciesClient {
     return response.data;
   }
 
-  async listPolicies(offset: number = 0, limit: number = 100): Promise<PolicyIdentity[]> {
+  async listPolicies(offset: number = 0, limit: number = 100): Promise<PoliciesResponse> {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/policies', query)
     return response.data;

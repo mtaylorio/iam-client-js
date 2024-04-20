@@ -46,6 +46,10 @@ describe('IAM', () => {
     const users = iam.users;
     const userList = await users.listUsers();
     expect(userList).toBeDefined();
+    expect(userList.items).toBeDefined();
+    expect(userList.offset).toBeDefined();
+    expect(userList.limit).toBeDefined();
+    expect(userList.total).toBeDefined();
   });
 
   it('should create a group', async () => {

@@ -56,6 +56,24 @@ export interface Group {
     users: UserIdentity[];
     policies: PolicyIdentity[];
 }
+export interface UsersResponse {
+    items: UserIdentity[];
+    offset: number;
+    limit: number;
+    total: number;
+}
+export interface GroupsResponse {
+    items: GroupIdentity[];
+    offset: number;
+    limit: number;
+    total: number;
+}
+export interface PoliciesResponse {
+    items: PolicyIdentity[];
+    offset: number;
+    limit: number;
+    total: number;
+}
 export declare function rule(effect: Effect, action: Action, resource: string): Rule;
 export declare class Principal {
     readonly user: User;
@@ -100,7 +118,7 @@ export declare class UsersClient {
     createUser(email?: string | null, groups?: string[], policies?: string[]): Promise<Principal>;
     deleteUser(id: string): Promise<void>;
     getUser(id: string): Promise<User>;
-    listUsers(offset?: number, limit?: number): Promise<UserIdentity[]>;
+    listUsers(offset?: number, limit?: number): Promise<UsersResponse>;
     attachPolicy(userId: string, policyId: string): Promise<void>;
     detachPolicy(userId: string, policyId: string): Promise<void>;
 }
@@ -110,7 +128,7 @@ export declare class GroupsClient {
     createGroup(name?: string | null, users?: string[], policies?: string[]): Promise<Group>;
     deleteGroup(id: string): Promise<void>;
     getGroup(id: string): Promise<Group>;
-    listGroups(offset?: number, limit?: number): Promise<GroupIdentity[]>;
+    listGroups(offset?: number, limit?: number): Promise<GroupsResponse>;
     attachPolicy(groupId: string, policyId: string): Promise<void>;
     detachPolicy(groupId: string, policyId: string): Promise<void>;
     addMember(groupId: string, userId: string): Promise<void>;
@@ -122,5 +140,5 @@ export declare class PoliciesClient {
     createPolicy(spec: PolicySpec): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
     getPolicy(id: string): Promise<Policy>;
-    listPolicies(offset?: number, limit?: number): Promise<PolicyIdentity[]>;
+    listPolicies(offset?: number, limit?: number): Promise<PoliciesResponse>;
 }
