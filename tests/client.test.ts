@@ -175,4 +175,22 @@ describe('IAM', () => {
     iam.groups.deleteGroup(group.id);
     iam.users.deleteUser(principal.user.id);
   });
+
+  it('should list user sessions', async () => {
+    const sessions = await iam.sessions.listSessions();
+    expect(sessions).toBeDefined();
+    expect(sessions.items).toBeDefined();
+    expect(sessions.offset).toBeDefined();
+    expect(sessions.limit).toBeDefined();
+    expect(sessions.total).toBeDefined();
+  });
+
+  it('should create, get, refresh, and delete a session', async () => {
+    const session = await iam.sessions.createSession();
+    expect(session).toBeDefined();
+    const fetched = await iam.sessions.getSession(session.id);
+    expect(fetched).toBeDefined();
+    await iam.sessions.refreshSession(session.id);
+    await iam.sessions.deleteSession(session.id);
+  });
 });

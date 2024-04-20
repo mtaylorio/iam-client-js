@@ -37,6 +37,7 @@ export default class IAM {
     users;
     groups;
     policies;
+    sessions;
     constructor(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
         this.protocol = protocol.endsWith(':') ? protocol.slice(0, -1) : protocol;
         this.host = host;
@@ -45,6 +46,7 @@ export default class IAM {
         this.users = new UsersClient(this);
         this.groups = new GroupsClient(this);
         this.policies = new PoliciesClient(this);
+        this.sessions = new SessionsClient(this);
     }
     async login(userId, secretKey) {
         await sodium.ready;
@@ -232,6 +234,36 @@ export class PoliciesClient {
         const query = `?offset=${offset}&limit=${limit}`;
         const response = await this.iam.request('GET', '/policies', query);
         return response.data;
+    }
+}
+export class SessionsClient {
+    iam;
+    constructor(iam) {
+        this.iam = iam;
+    }
+    async createSession(userId = null) {
+        const path = userId ? `/users/${userId}/sessions` : '/user/sessions';
+        const response = await this.iam.request('POST', path);
+        return response.data;
+    }
+    async listSessions(userId = null, offset = 0, limit = 100) {
+        const query = `?offset=${offset}&limit=${limit}`;
+        const path = userId ? `/users/${userId}/sessions` : '/user/sessions';
+        const response = await this.iam.request('GET', path, query);
+        return response.data;
+    }
+    async getSession(id, userId = null) {
+        const path = userId ? `/users/${userId}/sessions/${id}` : `/user/sessions/${id}`;
+        const response = await this.iam.request('GET', path);
+        return response.data;
+    }
+    async deleteSession(id, userId = null) {
+        const path = userId ? `/users/${userId}/sessions/${id}` : `/user/sessions/${id}`;
+        await this.iam.request('DELETE', path);
+    }
+    async refreshSession(id, userId = null) {
+        const path = userId ? `/users/${userId}/sessions/${id}/refresh` : `/user/sessions/${id}/refresh`;
+        await this.iam.request('POST', path);
     }
 }
 function requestStringToSign(method, host, path, query, requestId, sessionToken) {

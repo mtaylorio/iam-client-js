@@ -56,22 +56,39 @@ export interface Group {
     users: UserIdentity[];
     policies: PolicyIdentity[];
 }
+export interface Session {
+    id: string;
+    user: string;
+    expiration: string;
+}
+export interface CreateSession {
+    id: string;
+    user: string;
+    token: string;
+    expiration: string;
+}
 export interface UsersResponse {
     items: UserIdentity[];
-    offset: number;
     limit: number;
+    offset: number;
     total: number;
 }
 export interface GroupsResponse {
     items: GroupIdentity[];
-    offset: number;
     limit: number;
+    offset: number;
     total: number;
 }
 export interface PoliciesResponse {
     items: PolicyIdentity[];
-    offset: number;
     limit: number;
+    offset: number;
+    total: number;
+}
+export interface SessionsResponse {
+    items: Session[];
+    limit: number;
+    offset: number;
     total: number;
 }
 export declare function rule(effect: Effect, action: Action, resource: string): Rule;
@@ -96,6 +113,7 @@ export default class IAM {
     users: UsersClient;
     groups: GroupsClient;
     policies: PoliciesClient;
+    sessions: SessionsClient;
     constructor(protocol?: string, host?: string, port?: number | null);
     login(userId: string, secretKey: Uint8Array | string): Promise<void>;
     logout(): Promise<void>;
@@ -141,4 +159,13 @@ export declare class PoliciesClient {
     deletePolicy(id: string): Promise<void>;
     getPolicy(id: string): Promise<Policy>;
     listPolicies(offset?: number, limit?: number): Promise<PoliciesResponse>;
+}
+export declare class SessionsClient {
+    private iam;
+    constructor(iam: IAM);
+    createSession(userId?: string | null): Promise<CreateSession>;
+    listSessions(userId?: string | null, offset?: number, limit?: number): Promise<SessionsResponse>;
+    getSession(id: string, userId?: string | null): Promise<Session>;
+    deleteSession(id: string, userId?: string | null): Promise<void>;
+    refreshSession(id: string, userId?: string | null): Promise<void>;
 }

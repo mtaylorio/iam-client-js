@@ -92,26 +92,49 @@ export interface Group {
 }
 
 
+export interface Session {
+  id: string,
+  user: string,
+  expiration: string,
+}
+
+
+export interface CreateSession {
+  id: string,
+  user: string,
+  token: string,
+  expiration: string,
+}
+
+
 export interface UsersResponse {
   items: UserIdentity[],
-  offset: number,
   limit: number,
+  offset: number,
   total: number,
 }
 
 
 export interface GroupsResponse {
   items: GroupIdentity[],
-  offset: number,
   limit: number,
+  offset: number,
   total: number,
 }
 
 
 export interface PoliciesResponse {
   items: PolicyIdentity[],
-  offset: number,
   limit: number,
+  offset: number,
+  total: number,
+}
+
+
+export interface SessionsResponse {
+  items: Session[],
+  limit: number,
+  offset: number,
   total: number,
 }
 
@@ -156,6 +179,7 @@ export default class IAM {
   public users: UsersClient;
   public groups: GroupsClient;
   public policies: PoliciesClient;
+  public sessions: SessionsClient;
 
   constructor(
     protocol: string = DEFAULT_PROTOCOL,
@@ -170,6 +194,7 @@ export default class IAM {
     this.users = new UsersClient(this);
     this.groups = new GroupsClient(this);
     this.policies = new PoliciesClient(this);
+    this.sessions = new SessionsClient(this);
   }
 
   async login(
@@ -439,6 +464,59 @@ export class PoliciesClient {
     const query = `?offset=${offset}&limit=${limit}`;
     const response = await this.iam.request('GET', '/policies', query)
     return response.data;
+  }
+}
+
+
+export class SessionsClient {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
+  }
+
+  async createSession(
+    userId: string | null = null,
+  ): Promise<CreateSession> {
+    const path = userId ? `/users/${userId}/sessions` : '/user/sessions';
+    const response = await this.iam.request('POST', path);
+    return response.data;
+  }
+
+  async listSessions(
+    userId: string | null = null,
+    offset: number = 0,
+    limit: number = 100,
+  ): Promise<SessionsResponse> {
+    const query = `?offset=${offset}&limit=${limit}`;
+    const path = userId ? `/users/${userId}/sessions` : '/user/sessions';
+    const response = await this.iam.request('GET', path, query);
+    return response.data;
+  }
+
+  async getSession(
+    id: string,
+    userId: string | null = null,
+  ): Promise<Session> {
+    const path = userId ? `/users/${userId}/sessions/${id}` : `/user/sessions/${id}`;
+    const response = await this.iam.request('GET', path);
+    return response.data;
+  }
+
+  async deleteSession(
+    id: string,
+    userId: string | null = null,
+  ): Promise<void> {
+    const path = userId ? `/users/${userId}/sessions/${id}` : `/user/sessions/${id}`;
+    await this.iam.request('DELETE', path);
+  }
+
+  async refreshSession(
+    id: string,
+    userId: string | null = null,
+  ): Promise<void> {
+    const path = userId ? `/users/${userId}/sessions/${id}/refresh` : `/user/sessions/${id}/refresh`;
+    await this.iam.request('POST', path);
   }
 }
 
