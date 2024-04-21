@@ -21,9 +21,9 @@ export interface PolicyIdentityObject {
     id: string;
     name?: string;
 }
-export type GroupIdentity = string | GroupIdentityObject;
-export type UserIdentity = string | UserIdentityObject;
-export type PolicyIdentity = string | PolicyIdentityObject;
+export type GroupIdentity = GroupIdentityObject;
+export type UserIdentity = UserIdentityObject;
+export type PolicyIdentity = PolicyIdentityObject;
 export interface Rule {
     action: Action;
     effect: Effect;

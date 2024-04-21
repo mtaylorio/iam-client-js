@@ -44,13 +44,13 @@ export interface PolicyIdentityObject {
 }
 
 
-export type GroupIdentity = string | GroupIdentityObject;
+export type GroupIdentity = GroupIdentityObject;
 
 
-export type UserIdentity = string | UserIdentityObject;
+export type UserIdentity = UserIdentityObject;
 
 
-export type PolicyIdentity = string | PolicyIdentityObject;
+export type PolicyIdentity = PolicyIdentityObject;
 
 
 export interface Rule {
