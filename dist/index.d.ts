@@ -59,12 +59,14 @@ export interface Group {
 export interface Session {
     id: string;
     user: string;
+    address: string;
     expiration: string;
 }
 export interface CreateSession {
     id: string;
     user: string;
     token: string;
+    address: string;
     expiration: string;
 }
 export interface UsersResponse {
