@@ -9,21 +9,18 @@ export declare const enum Effect {
     DENY = "Deny"
 }
 export declare const PolicyEffects: Effect[];
-export interface UserIdentityObject {
+export interface UserIdentity {
     id: string;
     email?: string;
 }
-export interface GroupIdentityObject {
+export interface GroupIdentity {
     id: string;
     name?: string;
 }
-export interface PolicyIdentityObject {
+export interface PolicyIdentity {
     id: string;
     name?: string;
 }
-export type GroupIdentity = GroupIdentityObject;
-export type UserIdentity = UserIdentityObject;
-export type PolicyIdentity = PolicyIdentityObject;
 export interface Rule {
     action: Action;
     effect: Effect;

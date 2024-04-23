@@ -26,31 +26,22 @@ export const enum Effect {
 export const PolicyEffects = [Effect.ALLOW, Effect.DENY];
 
 
-export interface UserIdentityObject {
+export interface UserIdentity {
   id: string,
   email?: string,
 }
 
 
-export interface GroupIdentityObject {
+export interface GroupIdentity {
   id: string,
   name?: string,
 }
 
 
-export interface PolicyIdentityObject {
+export interface PolicyIdentity {
   id: string,
   name?: string,
 }
-
-
-export type GroupIdentity = GroupIdentityObject;
-
-
-export type UserIdentity = UserIdentityObject;
-
-
-export type PolicyIdentity = PolicyIdentityObject;
 
 
 export interface Rule {
