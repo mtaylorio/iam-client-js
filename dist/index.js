@@ -172,9 +172,9 @@ export class UsersClient {
         const response = await this.iam.request('GET', `/users/${id}`);
         return response.data;
     }
-    async listUsers(emailPrefix = null, offset = 0, limit = 100) {
+    async listUsers(search = null, offset = 0, limit = 100) {
         const query = `?offset=${offset}&limit=${limit}` +
-            (emailPrefix ? `&emailPrefix=${emailPrefix}` : '');
+            (search ? `&search=${search}` : '');
         const response = await this.iam.request('GET', '/users', query);
         return response.data;
     }

@@ -370,12 +370,12 @@ export class UsersClient {
   }
 
   async listUsers(
-    emailPrefix: string | null = null,
+    search: string | null = null,
     offset: number = 0,
     limit: number = 100,
   ): Promise<UsersResponse> {
     const query = `?offset=${offset}&limit=${limit}` +
-      (emailPrefix ? `&emailPrefix=${emailPrefix}` : '');
+      (search ? `&search=${search}` : '');
     const response = await this.iam.request('GET', '/users', query)
     return response.data;
   }

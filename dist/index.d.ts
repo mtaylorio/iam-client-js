@@ -138,7 +138,7 @@ export declare class UsersClient {
     createUser(email?: string | null, groups?: string[], policies?: string[]): Promise<Principal>;
     deleteUser(id: string): Promise<void>;
     getUser(id: string): Promise<User>;
-    listUsers(emailPrefix?: string | null, offset?: number, limit?: number): Promise<UsersResponse>;
+    listUsers(search?: string | null, offset?: number, limit?: number): Promise<UsersResponse>;
     attachPolicy(userId: string, policyId: string): Promise<void>;
     detachPolicy(userId: string, policyId: string): Promise<void>;
 }
