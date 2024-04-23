@@ -111,6 +111,9 @@ export default class IAM {
     publicKey: Uint8Array | null;
     sessionId: string | null;
     sessionToken: string | null;
+    sessionExpires: string | null;
+    sessionAddress: string | null;
+    sessionUserId: string | null;
     user: UserClient;
     users: UsersClient;
     groups: GroupsClient;

@@ -176,6 +176,9 @@ export default class IAM {
   public publicKey: Uint8Array | null = null;
   public sessionId: string | null = null;
   public sessionToken: string | null = null;
+  public sessionExpires: string | null = null;
+  public sessionAddress: string | null = null;
+  public sessionUserId: string | null = null;
 
   public user: UserClient;
   public users: UsersClient;
@@ -214,6 +217,9 @@ export default class IAM {
     const response = await this.request('POST', '/user/sessions');
     this.sessionId = response.data.id;
     this.sessionToken = response.data.token;
+    this.sessionExpires = response.data.expiration;
+    this.sessionAddress = response.data.address;
+    this.sessionUserId = response.data.user;
   }
 
   async logout(): Promise<void> {
@@ -223,6 +229,9 @@ export default class IAM {
     this.publicKey = null;
     this.sessionId = null;
     this.sessionToken = null;
+    this.sessionExpires = null;
+    this.sessionAddress = null;
+    this.sessionUserId = null;
   }
 
   async refresh(
@@ -243,6 +252,9 @@ export default class IAM {
     if (this.sessionId && this.sessionToken) {
       const refreshUrl = `/user/sessions/${this.sessionId}/refresh`
       const response = await this.request('POST', refreshUrl);
+      this.sessionExpires = response.data.expiration;
+      this.sessionAddress = response.data.address;
+      this.sessionUserId = response.data.user;
     }
   }
 

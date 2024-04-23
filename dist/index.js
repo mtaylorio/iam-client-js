@@ -33,6 +33,9 @@ export default class IAM {
     publicKey = null;
     sessionId = null;
     sessionToken = null;
+    sessionExpires = null;
+    sessionAddress = null;
+    sessionUserId = null;
     user;
     users;
     groups;
@@ -58,6 +61,9 @@ export default class IAM {
         const response = await this.request('POST', '/user/sessions');
         this.sessionId = response.data.id;
         this.sessionToken = response.data.token;
+        this.sessionExpires = response.data.expiration;
+        this.sessionAddress = response.data.address;
+        this.sessionUserId = response.data.user;
     }
     async logout() {
         await this.request('DELETE', `/user/sessions/${this.sessionId}`);
@@ -66,6 +72,9 @@ export default class IAM {
         this.publicKey = null;
         this.sessionId = null;
         this.sessionToken = null;
+        this.sessionExpires = null;
+        this.sessionAddress = null;
+        this.sessionUserId = null;
     }
     async refresh(userId = null, secretKey = null, sessionId = null, sessionToken = null) {
         this.userId = userId ? userId : this.userId;
@@ -79,6 +88,9 @@ export default class IAM {
         if (this.sessionId && this.sessionToken) {
             const refreshUrl = `/user/sessions/${this.sessionId}/refresh`;
             const response = await this.request('POST', refreshUrl);
+            this.sessionExpires = response.data.expiration;
+            this.sessionAddress = response.data.address;
+            this.sessionUserId = response.data.user;
         }
     }
     async request(method, path, query = null, body = null) {
