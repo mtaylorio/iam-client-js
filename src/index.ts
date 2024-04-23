@@ -375,7 +375,7 @@ export class UsersClient {
     limit: number = 100,
   ): Promise<UsersResponse> {
     const query = `?offset=${offset}&limit=${limit}` +
-      (emailPrefix ? `&email=${emailPrefix}` : '');
+      (emailPrefix ? `&emailPrefix=${emailPrefix}` : '');
     const response = await this.iam.request('GET', '/users', query)
     return response.data;
   }
