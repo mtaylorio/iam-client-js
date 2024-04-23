@@ -203,8 +203,9 @@ export class GroupsClient {
         const response = await this.iam.request('GET', `/groups/${id}`);
         return response.data;
     }
-    async listGroups(offset = 0, limit = 100) {
-        const query = `?offset=${offset}&limit=${limit}`;
+    async listGroups(search = null, offset = 0, limit = 100) {
+        const query = `?offset=${offset}&limit=${limit}` +
+            (search ? `&search=${search}` : '');
         const response = await this.iam.request('GET', '/groups', query);
         return response.data;
     }
@@ -243,8 +244,9 @@ export class PoliciesClient {
         const response = await this.iam.request('GET', `/policies/${id}`);
         return response.data;
     }
-    async listPolicies(offset = 0, limit = 100) {
-        const query = `?offset=${offset}&limit=${limit}`;
+    async listPolicies(search = null, offset = 0, limit = 100) {
+        const query = `?offset=${offset}&limit=${limit}` +
+            (search ? `&search=${search}` : '');
         const response = await this.iam.request('GET', '/policies', query);
         return response.data;
     }

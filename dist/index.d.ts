@@ -148,7 +148,7 @@ export declare class GroupsClient {
     createGroup(name?: string | null, users?: string[], policies?: string[]): Promise<Group>;
     deleteGroup(id: string): Promise<void>;
     getGroup(id: string): Promise<Group>;
-    listGroups(offset?: number, limit?: number): Promise<GroupsResponse>;
+    listGroups(search?: string | null, offset?: number, limit?: number): Promise<GroupsResponse>;
     attachPolicy(groupId: string, policyId: string): Promise<void>;
     detachPolicy(groupId: string, policyId: string): Promise<void>;
     addMember(groupId: string, userId: string): Promise<void>;
@@ -160,7 +160,7 @@ export declare class PoliciesClient {
     createPolicy(spec: PolicySpec): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
     getPolicy(id: string): Promise<Policy>;
-    listPolicies(offset?: number, limit?: number): Promise<PoliciesResponse>;
+    listPolicies(search?: string | null, offset?: number, limit?: number): Promise<PoliciesResponse>;
 }
 export declare class SessionsClient {
     private iam;

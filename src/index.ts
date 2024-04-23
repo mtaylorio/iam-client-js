@@ -417,8 +417,13 @@ export class GroupsClient {
     return response.data;
   }
 
-  async listGroups(offset: number = 0, limit: number = 100): Promise<GroupsResponse> {
-    const query = `?offset=${offset}&limit=${limit}`;
+  async listGroups(
+    search: string | null = null,
+    offset: number = 0,
+    limit: number = 100
+  ): Promise<GroupsResponse> {
+    const query = `?offset=${offset}&limit=${limit}` +
+      (search ? `&search=${search}` : '');
     const response = await this.iam.request('GET', '/groups', query)
     return response.data;
   }
@@ -470,8 +475,13 @@ export class PoliciesClient {
     return response.data;
   }
 
-  async listPolicies(offset: number = 0, limit: number = 100): Promise<PoliciesResponse> {
-    const query = `?offset=${offset}&limit=${limit}`;
+  async listPolicies(
+    search: string | null = null,
+    offset: number = 0,
+    limit: number = 100
+  ): Promise<PoliciesResponse> {
+    const query = `?offset=${offset}&limit=${limit}` +
+      (search ? `&search=${search}` : '');
     const response = await this.iam.request('GET', '/policies', query)
     return response.data;
   }
