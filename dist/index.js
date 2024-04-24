@@ -154,14 +154,14 @@ export class UsersClient {
     constructor(iam) {
         this.iam = iam;
     }
-    async createUser(email = null, groups = [], policies = []) {
+    async createUser(name = null, email = null, groups = [], policies = []) {
         const keypair = sodium.crypto_sign_keypair();
         const publicKeys = [{
                 'description': 'default',
                 'key': sodium.to_base64(keypair.publicKey, sodium.base64_variants.ORIGINAL),
             }];
         const id = uuidv4();
-        const user = { id, email, groups, policies, publicKeys };
+        const user = { id, name, email, groups, policies, publicKeys };
         const response = await this.iam.request('POST', '/users', null, user);
         return new Principal(response.data, keypair.privateKey, keypair.publicKey);
     }

@@ -28,6 +28,7 @@ export const PolicyEffects = [Effect.ALLOW, Effect.DENY];
 
 export interface UserIdentity {
   id: string,
+  name?: string,
   email?: string,
 }
 
@@ -68,6 +69,7 @@ export interface PolicySpec {
 
 export interface User {
   id: string,
+  name: string | null,
   email: string | null,
   groups: GroupIdentity[],
   policies: PolicyIdentity[],
@@ -341,6 +343,7 @@ export class UsersClient {
   }
 
   async createUser(
+    name: string | null = null,
     email: string | null = null,
     groups: string[] = [],
     policies: string[] = [],
@@ -353,7 +356,7 @@ export class UsersClient {
     }]
 
     const id = uuidv4();
-    const user = { id, email, groups, policies, publicKeys };
+    const user = { id, name, email, groups, policies, publicKeys };
 
     const response = await this.iam.request('POST', '/users', null, user);
 

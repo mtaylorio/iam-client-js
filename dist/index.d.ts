@@ -11,6 +11,7 @@ export declare const enum Effect {
 export declare const PolicyEffects: Effect[];
 export interface UserIdentity {
     id: string;
+    name?: string;
     email?: string;
 }
 export interface GroupIdentity {
@@ -39,6 +40,7 @@ export interface PolicySpec {
 }
 export interface User {
     id: string;
+    name: string | null;
     email: string | null;
     groups: GroupIdentity[];
     policies: PolicyIdentity[];
@@ -135,7 +137,7 @@ export declare class UserClient {
 export declare class UsersClient {
     private iam;
     constructor(iam: IAM);
-    createUser(email?: string | null, groups?: string[], policies?: string[]): Promise<Principal>;
+    createUser(name?: string | null, email?: string | null, groups?: string[], policies?: string[]): Promise<Principal>;
     deleteUser(id: string): Promise<void>;
     getUser(id: string): Promise<User>;
     listUsers(search?: string | null, offset?: number, limit?: number): Promise<UsersResponse>;
