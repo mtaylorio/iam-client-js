@@ -9,6 +9,27 @@ export declare const enum Effect {
     DENY = "Deny"
 }
 export declare const PolicyEffects: Effect[];
+export declare const enum SortOrder {
+    ASC = "asc",
+    DESC = "desc"
+}
+export declare const SortOrders: SortOrder[];
+export declare const enum SortUsersBy {
+    SORT_USERS_BY_ID = "id",
+    SORT_USERS_BY_NAME = "name",
+    SORT_USERS_BY_EMAIL = "email"
+}
+export declare const SortUsersByValues: SortUsersBy[];
+export declare const enum SortGroupsBy {
+    SORT_GROUPS_BY_ID = "id",
+    SORT_GROUPS_BY_NAME = "name"
+}
+export declare const SortGroupsByValues: SortGroupsBy[];
+export declare const enum SortPoliciesBy {
+    SORT_POLICIES_BY_ID = "id",
+    SORT_POLICIES_BY_NAME = "name"
+}
+export declare const SortPoliciesByValues: SortPoliciesBy[];
 export interface UserIdentity {
     id: string;
     name?: string;
@@ -140,7 +161,7 @@ export declare class UsersClient {
     createUser(name?: string | null, email?: string | null, groups?: string[], policies?: string[]): Promise<Principal>;
     deleteUser(id: string): Promise<void>;
     getUser(id: string): Promise<User>;
-    listUsers(search?: string | null, offset?: number, limit?: number): Promise<UsersResponse>;
+    listUsers(search?: string | null, sortBy?: SortUsersBy | null, sortOrder?: SortOrder | null, offset?: number | null, limit?: number | null): Promise<UsersResponse>;
     attachPolicy(userId: string, policyId: string): Promise<void>;
     detachPolicy(userId: string, policyId: string): Promise<void>;
 }
@@ -150,7 +171,7 @@ export declare class GroupsClient {
     createGroup(name?: string | null, users?: string[], policies?: string[]): Promise<Group>;
     deleteGroup(id: string): Promise<void>;
     getGroup(id: string): Promise<Group>;
-    listGroups(search?: string | null, offset?: number, limit?: number): Promise<GroupsResponse>;
+    listGroups(search?: string | null, sortBy?: SortGroupsBy | null, sortOrder?: SortOrder | null, offset?: number | null, limit?: number | null): Promise<GroupsResponse>;
     attachPolicy(groupId: string, policyId: string): Promise<void>;
     detachPolicy(groupId: string, policyId: string): Promise<void>;
     addMember(groupId: string, userId: string): Promise<void>;
@@ -162,7 +183,7 @@ export declare class PoliciesClient {
     createPolicy(spec: PolicySpec): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
     getPolicy(id: string): Promise<Policy>;
-    listPolicies(search?: string | null, offset?: number, limit?: number): Promise<PoliciesResponse>;
+    listPolicies(search?: string | null, sortBy?: SortPoliciesBy | null, sortOrder?: SortOrder | null, offset?: number | null, limit?: number | null): Promise<PoliciesResponse>;
 }
 export declare class SessionsClient {
     private iam;

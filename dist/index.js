@@ -6,6 +6,20 @@ const DEFAULT_HOST = 'iam.mtaylor.io';
 const DEFAULT_PORT = null;
 export const PolicyActions = ["Read" /* Action.READ */, "Write" /* Action.WRITE */];
 export const PolicyEffects = ["Allow" /* Effect.ALLOW */, "Deny" /* Effect.DENY */];
+export const SortOrders = ["asc" /* SortOrder.ASC */, "desc" /* SortOrder.DESC */];
+export const SortUsersByValues = [
+    "id" /* SortUsersBy.SORT_USERS_BY_ID */,
+    "name" /* SortUsersBy.SORT_USERS_BY_NAME */,
+    "email" /* SortUsersBy.SORT_USERS_BY_EMAIL */,
+];
+export const SortGroupsByValues = [
+    "id" /* SortGroupsBy.SORT_GROUPS_BY_ID */,
+    "name" /* SortGroupsBy.SORT_GROUPS_BY_NAME */,
+];
+export const SortPoliciesByValues = [
+    "id" /* SortPoliciesBy.SORT_POLICIES_BY_ID */,
+    "name" /* SortPoliciesBy.SORT_POLICIES_BY_NAME */,
+];
 export function rule(effect, action, resource) {
     return { action, effect, resource };
 }
@@ -172,9 +186,25 @@ export class UsersClient {
         const response = await this.iam.request('GET', `/users/${id}`);
         return response.data;
     }
-    async listUsers(search = null, offset = 0, limit = 100) {
-        const query = `?offset=${offset}&limit=${limit}` +
-            (search ? `&search=${search}` : '');
+    async listUsers(search = null, sortBy = null, sortOrder = null, offset = null, limit = null) {
+        const params = new URLSearchParams();
+        if (search) {
+            params.append('search', search);
+        }
+        if (sortBy) {
+            params.append('sort', sortBy);
+        }
+        if (sortOrder) {
+            params.append('order', sortOrder);
+        }
+        if (offset) {
+            params.append('offset', offset.toString());
+        }
+        if (limit) {
+            params.append('limit', limit.toString());
+        }
+        const queryParams = params.toString();
+        const query = queryParams === '' ? null : `?${queryParams}`;
         const response = await this.iam.request('GET', '/users', query);
         return response.data;
     }
@@ -203,9 +233,25 @@ export class GroupsClient {
         const response = await this.iam.request('GET', `/groups/${id}`);
         return response.data;
     }
-    async listGroups(search = null, offset = 0, limit = 100) {
-        const query = `?offset=${offset}&limit=${limit}` +
-            (search ? `&search=${search}` : '');
+    async listGroups(search = null, sortBy = null, sortOrder = null, offset = null, limit = null) {
+        const params = new URLSearchParams();
+        if (search) {
+            params.append('search', search);
+        }
+        if (sortBy) {
+            params.append('sort', sortBy);
+        }
+        if (sortOrder) {
+            params.append('order', sortOrder);
+        }
+        if (offset !== null) {
+            params.append('offset', offset.toString());
+        }
+        if (limit !== null) {
+            params.append('limit', limit.toString());
+        }
+        const queryParams = params.toString();
+        const query = queryParams === '' ? null : `?${queryParams}`;
         const response = await this.iam.request('GET', '/groups', query);
         return response.data;
     }
@@ -244,9 +290,25 @@ export class PoliciesClient {
         const response = await this.iam.request('GET', `/policies/${id}`);
         return response.data;
     }
-    async listPolicies(search = null, offset = 0, limit = 100) {
-        const query = `?offset=${offset}&limit=${limit}` +
-            (search ? `&search=${search}` : '');
+    async listPolicies(search = null, sortBy = null, sortOrder = null, offset = null, limit = null) {
+        const params = new URLSearchParams();
+        if (search) {
+            params.append('search', search);
+        }
+        if (sortBy) {
+            params.append('sort', sortBy);
+        }
+        if (sortOrder) {
+            params.append('order', sortOrder);
+        }
+        if (offset !== null) {
+            params.append('offset', offset.toString());
+        }
+        if (limit !== null) {
+            params.append('limit', limit.toString());
+        }
+        const queryParams = params.toString();
+        const query = queryParams === '' ? null : `?${queryParams}`;
         const response = await this.iam.request('GET', '/policies', query);
         return response.data;
     }
