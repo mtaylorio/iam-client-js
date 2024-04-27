@@ -8,6 +8,20 @@ const DEFAULT_HOST = 'iam.mtaylor.io';
 const DEFAULT_PORT = null;
 
 
+export const enum LoginStatus {
+  PENDING = 'pending',
+  GRANTED = 'granted',
+  DENIED = 'denied',
+}
+
+
+export const LoginStatusValues = [
+  LoginStatus.PENDING,
+  LoginStatus.GRANTED,
+  LoginStatus.DENIED,
+];
+
+
 export const enum Action {
   READ = 'Read',
   WRITE = 'Write',
@@ -114,6 +128,16 @@ export interface PolicySpec {
 }
 
 
+export interface LoginResponse {
+  id: string,
+  ip: string,
+  user: string,
+  publicKey: { description: string, key: string },
+  session: CreateSession | string,
+  status: LoginStatus,
+}
+
+
 export interface User {
   id: string,
   name: string | null,
@@ -146,6 +170,14 @@ export interface CreateSession {
   token: string,
   address: string,
   expiration: string,
+}
+
+
+export interface LoginResponses {
+  items: LoginResponse[],
+  limit: number,
+  offset: number,
+  total: number,
 }
 
 
@@ -222,6 +254,7 @@ export default class IAM {
 
   public user: UserClient;
   public users: UsersClient;
+  public logins: LoginsClient;
   public groups: GroupsClient;
   public policies: PoliciesClient;
   public sessions: SessionsClient;
@@ -237,6 +270,7 @@ export default class IAM {
 
     this.user = new UserClient(this);
     this.users = new UsersClient(this);
+    this.logins = new LoginsClient(this);
     this.groups = new GroupsClient(this);
     this.policies = new PoliciesClient(this);
     this.sessions = new SessionsClient(this);
@@ -461,6 +495,42 @@ export class UsersClient {
 
   async detachPolicy(userId: string, policyId: string): Promise<void> {
     await this.iam.request('DELETE', `/users/${userId}/policies/${policyId}`);
+  }
+}
+
+
+export class LoginsClient {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
+  }
+
+  async getLogin(id: string, userId: string | null = null): Promise<LoginResponse> {
+    const path = userId ? `/users/${userId}/login-requests/${id}` :
+      `/user/login-requests/${id}`;
+    const response = await this.iam.request('GET', path);
+    return response.data;
+  }
+
+  async listLogins(userId: string | null = null): Promise<LoginResponses> {
+    const path = userId ? `/users/${userId}/login-requests` : `/user/login-requests`;
+    const response = await this.iam.request('GET', path);
+    return response.data;
+  }
+
+  async denyLogin(id: string, userId: string | null = null): Promise<LoginResponse> {
+    const path = userId ? `/users/${userId}/login-requests/${id}/deny` :
+      `/user/login-requests/${id}/deny`;
+    const response = await this.iam.request('POST', path);
+    return response.data;
+  }
+
+  async grantLogin(id: string, userId: string | null = null): Promise<LoginResponse> {
+    const path = userId ? `/users/${userId}/login-requests/${id}/grant` :
+      `/user/login-requests/${id}/grant`;
+    const response = await this.iam.request('POST', path);
+    return response.data;
   }
 }
 

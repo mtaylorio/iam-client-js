@@ -1,4 +1,10 @@
 import { AxiosResponse } from 'axios';
+export declare const enum LoginStatus {
+    PENDING = "pending",
+    GRANTED = "granted",
+    DENIED = "denied"
+}
+export declare const LoginStatusValues: LoginStatus[];
 export declare const enum Action {
     READ = "Read",
     WRITE = "Write"
@@ -59,6 +65,17 @@ export interface PolicySpec {
     hostname: string;
     statements: Rule[];
 }
+export interface LoginResponse {
+    id: string;
+    ip: string;
+    user: string;
+    publicKey: {
+        description: string;
+        key: string;
+    };
+    session: CreateSession | string;
+    status: LoginStatus;
+}
 export interface User {
     id: string;
     name: string | null;
@@ -88,6 +105,12 @@ export interface CreateSession {
     token: string;
     address: string;
     expiration: string;
+}
+export interface LoginResponses {
+    items: LoginResponse[];
+    limit: number;
+    offset: number;
+    total: number;
 }
 export interface UsersResponse {
     items: UserIdentity[];
@@ -136,6 +159,7 @@ export default class IAM {
     sessionUserId: string | null;
     user: UserClient;
     users: UsersClient;
+    logins: LoginsClient;
     groups: GroupsClient;
     policies: PoliciesClient;
     sessions: SessionsClient;
@@ -164,6 +188,14 @@ export declare class UsersClient {
     listUsers(search?: string | null, sortBy?: SortUsersBy | null, sortOrder?: SortOrder | null, offset?: number | null, limit?: number | null): Promise<UsersResponse>;
     attachPolicy(userId: string, policyId: string): Promise<void>;
     detachPolicy(userId: string, policyId: string): Promise<void>;
+}
+export declare class LoginsClient {
+    private iam;
+    constructor(iam: IAM);
+    getLogin(id: string, userId?: string | null): Promise<LoginResponse>;
+    listLogins(userId?: string | null): Promise<LoginResponses>;
+    denyLogin(id: string, userId?: string | null): Promise<LoginResponse>;
+    grantLogin(id: string, userId?: string | null): Promise<LoginResponse>;
 }
 export declare class GroupsClient {
     private iam;

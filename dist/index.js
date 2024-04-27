@@ -4,6 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 const DEFAULT_PROTOCOL = 'https';
 const DEFAULT_HOST = 'iam.mtaylor.io';
 const DEFAULT_PORT = null;
+export const LoginStatusValues = [
+    "pending" /* LoginStatus.PENDING */,
+    "granted" /* LoginStatus.GRANTED */,
+    "denied" /* LoginStatus.DENIED */,
+];
 export const PolicyActions = ["Read" /* Action.READ */, "Write" /* Action.WRITE */];
 export const PolicyEffects = ["Allow" /* Effect.ALLOW */, "Deny" /* Effect.DENY */];
 export const SortOrders = ["asc" /* SortOrder.ASC */, "desc" /* SortOrder.DESC */];
@@ -52,6 +57,7 @@ export default class IAM {
     sessionUserId = null;
     user;
     users;
+    logins;
     groups;
     policies;
     sessions;
@@ -61,6 +67,7 @@ export default class IAM {
         this.port = port;
         this.user = new UserClient(this);
         this.users = new UsersClient(this);
+        this.logins = new LoginsClient(this);
         this.groups = new GroupsClient(this);
         this.policies = new PoliciesClient(this);
         this.sessions = new SessionsClient(this);
@@ -213,6 +220,35 @@ export class UsersClient {
     }
     async detachPolicy(userId, policyId) {
         await this.iam.request('DELETE', `/users/${userId}/policies/${policyId}`);
+    }
+}
+export class LoginsClient {
+    iam;
+    constructor(iam) {
+        this.iam = iam;
+    }
+    async getLogin(id, userId = null) {
+        const path = userId ? `/users/${userId}/login-requests/${id}` :
+            `/user/login-requests/${id}`;
+        const response = await this.iam.request('GET', path);
+        return response.data;
+    }
+    async listLogins(userId = null) {
+        const path = userId ? `/users/${userId}/login-requests` : `/user/login-requests`;
+        const response = await this.iam.request('GET', path);
+        return response.data;
+    }
+    async denyLogin(id, userId = null) {
+        const path = userId ? `/users/${userId}/login-requests/${id}/deny` :
+            `/user/login-requests/${id}/deny`;
+        const response = await this.iam.request('POST', path);
+        return response.data;
+    }
+    async grantLogin(id, userId = null) {
+        const path = userId ? `/users/${userId}/login-requests/${id}/grant` :
+            `/user/login-requests/${id}/grant`;
+        const response = await this.iam.request('POST', path);
+        return response.data;
     }
 }
 export class GroupsClient {
