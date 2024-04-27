@@ -231,9 +231,9 @@ export class Principal {
     this.publicKey = publicKey ?
       publicKey : sodium.crypto_sign_ed25519_sk_to_pk(privateKey);
     this.publicKeyBase64 = sodium.to_base64(
-      this.publicKey, sodium.base64_variants.ORIGINAL);
+      this.publicKey, sodium.base64_variants.URLSAFE);
     this.privateKeyBase64 = sodium.to_base64(
-      this.privateKey, sodium.base64_variants.ORIGINAL);
+      this.privateKey, sodium.base64_variants.URLSAFE);
   }
 }
 
@@ -308,7 +308,7 @@ export default class IAM {
     const id = this.loginId;
     const publicKey = {
       description,
-      key: sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL),
+      key: sodium.to_base64(this.publicKey, sodium.base64_variants.URLSAFE),
     };
 
     const loginRequest = { id, publicKey, user: userId };
@@ -328,7 +328,7 @@ export default class IAM {
   ): Promise<void> {
     await sodium.ready;
     const secretKeyBytes = typeof secretKey === 'string' ?
-      sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;
+      sodium.from_base64(secretKey, sodium.base64_variants.URLSAFE) : secretKey;
 
     this.userId = userId;
     this.secretKey = secretKeyBytes;
@@ -362,7 +362,7 @@ export default class IAM {
   ): Promise<void> {
     this.userId = userId ? userId : this.userId
     this.secretKey = secretKey ? typeof secretKey === 'string' ?
-      sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) :
+      sodium.from_base64(secretKey, sodium.base64_variants.URLSAFE) :
       secretKey : this.secretKey
     this.publicKey = this.secretKey ?
       sodium.crypto_sign_ed25519_sk_to_pk(this.secretKey) : null
@@ -387,7 +387,7 @@ export default class IAM {
     await sodium.ready;
     const url = this.url(path, query);
     const requestId = uuidv4();
-    const publicKey = sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL);
+    const publicKey = sodium.to_base64(this.publicKey, sodium.base64_variants.URLSAFE);
     const signature = this.signature(requestId, method, path, query);
 
     const headers = {
@@ -420,7 +420,7 @@ export default class IAM {
     return sodium.to_base64(sodium.crypto_sign_detached(
       requestStringToSign(method, this.host, path, query, requestId, this.sessionToken),
       this.secretKey,
-    ), sodium.base64_variants.ORIGINAL);
+    ), sodium.base64_variants.URLSAFE);
   }
 
   url(path: string, query: string | null = null): string {
@@ -479,7 +479,7 @@ export class UsersClient {
 
     const publicKeys = [{
       'description': 'default',
-      'key': sodium.to_base64(keypair.publicKey, sodium.base64_variants.ORIGINAL),
+      'key': sodium.to_base64(keypair.publicKey, sodium.base64_variants.URLSAFE),
     }]
 
     const id = uuidv4();
