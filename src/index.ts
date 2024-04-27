@@ -532,6 +532,12 @@ export class LoginsClient {
     const response = await this.iam.request('POST', path);
     return response.data;
   }
+
+  async deleteLogin(id: string, userId: string | null = null): Promise<void> {
+    const path = userId ? `/users/${userId}/login-requests/${id}` :
+      `/user/login-requests/${id}`;
+    await this.iam.request('DELETE', path);
+  }
 }
 
 

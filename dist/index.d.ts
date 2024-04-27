@@ -196,6 +196,7 @@ export declare class LoginsClient {
     listLogins(userId?: string | null): Promise<LoginResponses>;
     denyLogin(id: string, userId?: string | null): Promise<LoginResponse>;
     grantLogin(id: string, userId?: string | null): Promise<LoginResponse>;
+    deleteLogin(id: string, userId?: string | null): Promise<void>;
 }
 export declare class GroupsClient {
     private iam;
