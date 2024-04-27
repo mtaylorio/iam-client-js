@@ -164,7 +164,9 @@ export default class IAM {
     policies: PoliciesClient;
     sessions: SessionsClient;
     constructor(protocol?: string, host?: string, port?: number | null);
-    login(userId: string, secretKey: Uint8Array | string): Promise<void>;
+    login(userId: string, secretKey?: Uint8Array | string | null): Promise<void>;
+    loginRequest(userId: string, description?: string): Promise<void>;
+    loginWithSecretKey(userId: string, secretKey: Uint8Array | string): Promise<void>;
     logout(): Promise<void>;
     refresh(userId?: string | null, secretKey?: Uint8Array | string | null, sessionId?: string | null, sessionToken?: string | null): Promise<void>;
     request(method: string, path: string, query?: string | null, body?: any | null): Promise<AxiosResponse>;

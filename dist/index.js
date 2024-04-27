@@ -72,7 +72,38 @@ export default class IAM {
         this.policies = new PoliciesClient(this);
         this.sessions = new SessionsClient(this);
     }
-    async login(userId, secretKey) {
+    async login(userId, secretKey = null) {
+        if (secretKey === null || secretKey === '') {
+            return await this.loginRequest(userId);
+        }
+        else {
+            return await this.loginWithSecretKey(userId, secretKey);
+        }
+    }
+    async loginRequest(userId, description = 'default') {
+        await sodium.ready;
+        this.userId = userId;
+        if (!this.publicKey) {
+            const keypair = sodium.crypto_sign_keypair();
+            this.publicKey = keypair.publicKey;
+            this.secretKey = keypair.privateKey;
+        }
+        const id = uuidv4();
+        const publicKey = {
+            description,
+            key: sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL),
+        };
+        const loginRequest = { id, publicKey, user: userId };
+        const response = await axios.post(this.url('/login'), loginRequest);
+        if (response.data.status === 'granted') {
+            this.sessionId = response.data.session.id;
+            this.sessionToken = response.data.session.token;
+            this.sessionExpires = response.data.session.expiration;
+            this.sessionAddress = response.data.session.address;
+            this.sessionUserId = response.data.session.user;
+        }
+    }
+    async loginWithSecretKey(userId, secretKey) {
         await sodium.ready;
         const secretKeyBytes = typeof secretKey === 'string' ?
             sodium.from_base64(secretKey, sodium.base64_variants.ORIGINAL) : secretKey;

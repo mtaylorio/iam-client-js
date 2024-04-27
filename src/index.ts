@@ -278,7 +278,48 @@ export default class IAM {
 
   async login(
     userId: string,
-    secretKey: Uint8Array | string,
+    secretKey: Uint8Array | string | null = null,
+  ): Promise<void> {
+    if (secretKey === null || secretKey === '') {
+      return await this.loginRequest(userId);
+    } else {
+      return await this.loginWithSecretKey(userId, secretKey);
+    }
+  }
+
+  async loginRequest(
+    userId: string,
+    description: string = 'default',
+  ): Promise<void> {
+    await sodium.ready;
+
+    this.userId = userId;
+    if (!this.publicKey) {
+      const keypair = sodium.crypto_sign_keypair();
+      this.publicKey = keypair.publicKey;
+      this.secretKey = keypair.privateKey;
+    }
+
+    const id = uuidv4();
+    const publicKey = {
+      description,
+      key: sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL),
+    };
+
+    const loginRequest = { id, publicKey, user: userId };
+    const response = await axios.post(this.url('/login'), loginRequest);
+
+    if (response.data.status === 'granted') {
+      this.sessionId = response.data.session.id;
+      this.sessionToken = response.data.session.token;
+      this.sessionExpires = response.data.session.expiration;
+      this.sessionAddress = response.data.session.address;
+      this.sessionUserId = response.data.session.user;
+    }
+  }
+
+  async loginWithSecretKey(
+    userId: string, secretKey: Uint8Array | string
   ): Promise<void> {
     await sodium.ready;
     const secretKeyBytes = typeof secretKey === 'string' ?
