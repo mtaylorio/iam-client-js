@@ -246,6 +246,7 @@ export default class IAM {
   public userId: string | null = null;
   public secretKey: Uint8Array | null = null;
   public publicKey: Uint8Array | null = null;
+  public loginId: string | null = null;
   public sessionId: string | null = null;
   public sessionToken: string | null = null;
   public sessionExpires: string | null = null;
@@ -293,6 +294,10 @@ export default class IAM {
   ): Promise<void> {
     await sodium.ready;
 
+    if (!this.loginId) {
+      this.loginId = uuidv4();
+    }
+
     this.userId = userId;
     if (!this.publicKey) {
       const keypair = sodium.crypto_sign_keypair();
@@ -300,7 +305,7 @@ export default class IAM {
       this.secretKey = keypair.privateKey;
     }
 
-    const id = uuidv4();
+    const id = this.loginId;
     const publicKey = {
       description,
       key: sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL),

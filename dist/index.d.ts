@@ -152,6 +152,7 @@ export default class IAM {
     userId: string | null;
     secretKey: Uint8Array | null;
     publicKey: Uint8Array | null;
+    loginId: string | null;
     sessionId: string | null;
     sessionToken: string | null;
     sessionExpires: string | null;

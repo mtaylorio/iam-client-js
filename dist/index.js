@@ -50,6 +50,7 @@ export default class IAM {
     userId = null;
     secretKey = null;
     publicKey = null;
+    loginId = null;
     sessionId = null;
     sessionToken = null;
     sessionExpires = null;
@@ -82,13 +83,16 @@ export default class IAM {
     }
     async loginRequest(userId, description = 'default') {
         await sodium.ready;
+        if (!this.loginId) {
+            this.loginId = uuidv4();
+        }
         this.userId = userId;
         if (!this.publicKey) {
             const keypair = sodium.crypto_sign_keypair();
             this.publicKey = keypair.publicKey;
             this.secretKey = keypair.privateKey;
         }
-        const id = uuidv4();
+        const id = this.loginId;
         const publicKey = {
             description,
             key: sodium.to_base64(this.publicKey, sodium.base64_variants.ORIGINAL),
