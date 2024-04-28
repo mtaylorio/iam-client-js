@@ -65,14 +65,15 @@ export interface PolicySpec {
     hostname: string;
     statements: Rule[];
 }
+export interface UserPublicKey {
+    description: string;
+    key: string;
+}
 export interface LoginResponse {
     id: string;
     ip: string;
     user: string;
-    publicKey: {
-        description: string;
-        key: string;
-    };
+    publicKey: UserPublicKey;
     session: CreateSession | string;
     status: LoginStatus;
 }
@@ -82,10 +83,7 @@ export interface User {
     email: string | null;
     groups: GroupIdentity[];
     policies: PolicyIdentity[];
-    publicKeys: {
-        description: string;
-        key: string;
-    }[];
+    publicKeys: UserPublicKey[];
 }
 export interface Group {
     id: string;
@@ -105,6 +103,12 @@ export interface CreateSession {
     token: string;
     address: string;
     expiration: string;
+}
+export interface UserPublicKeysResponse {
+    items: UserPublicKey[];
+    limit: number;
+    offset: number;
+    total: number;
 }
 export interface LoginResponses {
     items: LoginResponse[];
@@ -164,6 +168,7 @@ export default class IAM {
     groups: GroupsClient;
     policies: PoliciesClient;
     sessions: SessionsClient;
+    publicKeys: PublicKeysClient;
     constructor(protocol?: string, host?: string, port?: number | null);
     login(userId: string, secretKey?: Uint8Array | string | null): Promise<void>;
     loginRequest(userId: string, description?: string): Promise<void>;
@@ -200,6 +205,14 @@ export declare class LoginsClient {
     denyLogin(id: string, userId?: string | null): Promise<LoginResponse>;
     grantLogin(id: string, userId?: string | null): Promise<LoginResponse>;
     deleteLogin(id: string, userId?: string | null): Promise<void>;
+}
+export declare class PublicKeysClient {
+    private iam;
+    constructor(iam: IAM);
+    createPublicKey(description: string, key: string, userId?: string | null): Promise<UserPublicKey>;
+    deletePublicKey(id: string, userId?: string | null): Promise<UserPublicKey>;
+    listPublicKeys(userId?: string | null): Promise<UserPublicKeysResponse>;
+    getPublicKey(id: string, userId?: string | null): Promise<UserPublicKey>;
 }
 export declare class GroupsClient {
     private iam;

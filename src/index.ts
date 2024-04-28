@@ -128,11 +128,17 @@ export interface PolicySpec {
 }
 
 
+export interface UserPublicKey {
+  description: string,
+  key: string,
+}
+
+
 export interface LoginResponse {
   id: string,
   ip: string,
   user: string,
-  publicKey: { description: string, key: string },
+  publicKey: UserPublicKey,
   session: CreateSession | string,
   status: LoginStatus,
 }
@@ -144,7 +150,7 @@ export interface User {
   email: string | null,
   groups: GroupIdentity[],
   policies: PolicyIdentity[],
-  publicKeys: { description: string, key: string }[],
+  publicKeys: UserPublicKey[],
 }
 
 
@@ -170,6 +176,14 @@ export interface CreateSession {
   token: string,
   address: string,
   expiration: string,
+}
+
+
+export interface UserPublicKeysResponse {
+  items: UserPublicKey[],
+  limit: number,
+  offset: number,
+  total: number,
 }
 
 
@@ -259,6 +273,7 @@ export default class IAM {
   public groups: GroupsClient;
   public policies: PoliciesClient;
   public sessions: SessionsClient;
+  public publicKeys: PublicKeysClient;
 
   constructor(
     protocol: string = DEFAULT_PROTOCOL,
@@ -275,6 +290,7 @@ export default class IAM {
     this.groups = new GroupsClient(this);
     this.policies = new PoliciesClient(this);
     this.sessions = new SessionsClient(this);
+    this.publicKeys = new PublicKeysClient(this);
   }
 
   async login(
@@ -583,6 +599,54 @@ export class LoginsClient {
     const path = userId ? `/users/${userId}/login-requests/${id}` :
       `/user/login-requests/${id}`;
     await this.iam.request('DELETE', path);
+  }
+}
+
+
+export class PublicKeysClient {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
+  }
+
+  async createPublicKey(
+    description: string,
+    key: string,
+    userId: string | null = null,
+  ): Promise<UserPublicKey> {
+    const publicKey = { description, key };
+    const path = userId ? `/users/${userId}/public-keys` : '/user/public-keys';
+    const response = await this.iam.request('POST', path, null, publicKey);
+    return response.data;
+  }
+
+  async deletePublicKey(
+    id: string,
+    userId: string | null = null,
+  ): Promise<UserPublicKey> {
+    const path = userId ? `/users/${userId}/public-keys/${id}` :
+      `/user/public-keys/${id}`;
+    const response = await this.iam.request('DELETE', path);
+    return response.data;
+  }
+
+  async listPublicKeys(
+    userId: string | null = null,
+  ): Promise<UserPublicKeysResponse> {
+    const path = userId ? `/users/${userId}/public-keys` : '/user/public-keys';
+    const response = await this.iam.request('GET', path);
+    return response.data;
+  }
+
+  async getPublicKey(
+    id: string,
+    userId: string | null = null,
+  ): Promise<UserPublicKey> {
+    const path = userId ? `/users/${userId}/public-keys/${id}` :
+      `/user/public-keys/${id}`;
+    const response = await this.iam.request('GET', path);
+    return response.data;
   }
 }
 

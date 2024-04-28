@@ -62,6 +62,7 @@ export default class IAM {
     groups;
     policies;
     sessions;
+    publicKeys;
     constructor(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
         this.protocol = protocol.endsWith(':') ? protocol.slice(0, -1) : protocol;
         this.host = host;
@@ -72,6 +73,7 @@ export default class IAM {
         this.groups = new GroupsClient(this);
         this.policies = new PoliciesClient(this);
         this.sessions = new SessionsClient(this);
+        this.publicKeys = new PublicKeysClient(this);
     }
     async login(userId, secretKey = null) {
         if (secretKey === null || secretKey === '') {
@@ -289,6 +291,35 @@ export class LoginsClient {
         const path = userId ? `/users/${userId}/login-requests/${id}` :
             `/user/login-requests/${id}`;
         await this.iam.request('DELETE', path);
+    }
+}
+export class PublicKeysClient {
+    iam;
+    constructor(iam) {
+        this.iam = iam;
+    }
+    async createPublicKey(description, key, userId = null) {
+        const publicKey = { description, key };
+        const path = userId ? `/users/${userId}/public-keys` : '/user/public-keys';
+        const response = await this.iam.request('POST', path, null, publicKey);
+        return response.data;
+    }
+    async deletePublicKey(id, userId = null) {
+        const path = userId ? `/users/${userId}/public-keys/${id}` :
+            `/user/public-keys/${id}`;
+        const response = await this.iam.request('DELETE', path);
+        return response.data;
+    }
+    async listPublicKeys(userId = null) {
+        const path = userId ? `/users/${userId}/public-keys` : '/user/public-keys';
+        const response = await this.iam.request('GET', path);
+        return response.data;
+    }
+    async getPublicKey(id, userId = null) {
+        const path = userId ? `/users/${userId}/public-keys/${id}` :
+            `/user/public-keys/${id}`;
+        const response = await this.iam.request('GET', path);
+        return response.data;
     }
 }
 export class GroupsClient {
