@@ -266,7 +266,9 @@ export default class IAM {
   public userId: string | null = null;
   public secretKey: Uint8Array | null = null;
   public publicKey: Uint8Array | null = null;
+
   public loginId: string | null = null;
+
   public sessionId: string | null = null;
   public sessionToken: string | null = null;
   public sessionExpires: string | null = null;
