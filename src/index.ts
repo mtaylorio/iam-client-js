@@ -154,6 +154,12 @@ export interface User {
 }
 
 
+export interface UserUpdate {
+  name?: string,
+  email?: string,
+}
+
+
 export interface Group {
   id: string,
   name: string | null,
@@ -464,6 +470,11 @@ export class UserClient {
     return response.data;
   }
 
+  async updateUser(update: UserUpdate): Promise<User> {
+    const response = await this.iam.request('PUT', '/user', null, update);
+    return response.data;
+  }
+
   async deleteUser(): Promise<void> {
     await this.iam.request('DELETE', '/user');
   }
@@ -504,6 +515,12 @@ export class UsersClient {
     const response = await this.iam.request('POST', '/users', null, user);
 
     return new Principal(response.data, keypair.privateKey, keypair.publicKey);
+  }
+
+  async updateUser(id: string, update: UserUpdate): Promise<User> {
+    const url = `/users/${id}`;
+    const response = await this.iam.request('PUT', url, null, update);
+    return response.data;
   }
 
   async deleteUser(id: string): Promise<void> {

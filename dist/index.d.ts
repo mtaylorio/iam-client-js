@@ -85,6 +85,10 @@ export interface User {
     policies: PolicyIdentity[];
     publicKeys: UserPublicKey[];
 }
+export interface UserUpdate {
+    name?: string;
+    email?: string;
+}
 export interface Group {
     id: string;
     name: string | null;
@@ -183,6 +187,7 @@ export declare class UserClient {
     private iam;
     constructor(iam: IAM);
     getUser(): Promise<User>;
+    updateUser(update: UserUpdate): Promise<User>;
     deleteUser(): Promise<void>;
     attachPolicy(policyId: string): Promise<void>;
     detachPolicy(policyId: string): Promise<void>;
@@ -191,6 +196,7 @@ export declare class UsersClient {
     private iam;
     constructor(iam: IAM);
     createUser(name?: string | null, email?: string | null, groups?: string[], policies?: string[]): Promise<Principal>;
+    updateUser(id: string, update: UserUpdate): Promise<User>;
     deleteUser(id: string): Promise<void>;
     getUser(id: string): Promise<User>;
     listUsers(search?: string | null, sortBy?: SortUsersBy | null, sortOrder?: SortOrder | null, offset?: number | null, limit?: number | null): Promise<UsersResponse>;

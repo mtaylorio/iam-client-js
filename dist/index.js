@@ -197,6 +197,10 @@ export class UserClient {
         const response = await this.iam.request('GET', '/user');
         return response.data;
     }
+    async updateUser(update) {
+        const response = await this.iam.request('PUT', '/user', null, update);
+        return response.data;
+    }
     async deleteUser() {
         await this.iam.request('DELETE', '/user');
     }
@@ -222,6 +226,11 @@ export class UsersClient {
         const user = { id, name, email, groups, policies, publicKeys };
         const response = await this.iam.request('POST', '/users', null, user);
         return new Principal(response.data, keypair.privateKey, keypair.publicKey);
+    }
+    async updateUser(id, update) {
+        const url = `/users/${id}`;
+        const response = await this.iam.request('PUT', url, null, update);
+        return response.data;
     }
     async deleteUser(id) {
         await this.iam.request('DELETE', `/users/${id}`);
