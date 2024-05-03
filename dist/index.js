@@ -124,7 +124,7 @@ export default class IAM {
         this.sessionUserId = response.data.user;
     }
     async logout() {
-        await this.request('DELETE', `/user/sessions/${this.sessionId}`);
+        const sessionId = this.sessionId;
         this.userId = null;
         this.secretKey = null;
         this.publicKey = null;
@@ -133,6 +133,7 @@ export default class IAM {
         this.sessionExpires = null;
         this.sessionAddress = null;
         this.sessionUserId = null;
+        await this.request('DELETE', `/user/sessions/${sessionId}`);
     }
     async refresh(userId = null, secretKey = null, sessionId = null, sessionToken = null) {
         await sodium.ready;
