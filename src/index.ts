@@ -384,6 +384,7 @@ export default class IAM {
     sessionId: string | null = null,
     sessionToken: string | null = null,
   ): Promise<void> {
+    await sodium.ready;
     this.userId = userId ? userId : this.userId
     this.secretKey = secretKey ? typeof secretKey === 'string' ?
       sodium.from_base64(secretKey, sodium.base64_variants.URLSAFE) :
