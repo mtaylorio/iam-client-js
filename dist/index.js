@@ -135,6 +135,7 @@ export default class IAM {
         this.sessionUserId = null;
     }
     async refresh(userId = null, secretKey = null, sessionId = null, sessionToken = null) {
+        await sodium.ready;
         this.userId = userId ? userId : this.userId;
         this.secretKey = secretKey ? typeof secretKey === 'string' ?
             sodium.from_base64(secretKey, sodium.base64_variants.URLSAFE) :
