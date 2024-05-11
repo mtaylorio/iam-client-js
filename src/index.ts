@@ -357,6 +357,8 @@ export default class IAM {
     this.userId = userId;
     this.secretKey = secretKeyBytes;
     this.publicKey = sodium.crypto_sign_ed25519_sk_to_pk(secretKeyBytes);
+    this.sessionId = null;
+    this.sessionToken = null;
 
     const response = await this.request('POST', '/user/sessions');
     this.sessionId = response.data.id;
