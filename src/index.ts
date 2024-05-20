@@ -146,8 +146,8 @@ export interface LoginResponse {
 
 export interface User {
   id: string,
-  name: string | null,
-  email: string | null,
+  name?: string,
+  email?: string,
   groups: GroupIdentity[],
   policies: PolicyIdentity[],
   publicKeys: UserPublicKey[],
@@ -162,7 +162,7 @@ export interface UserUpdate {
 
 export interface Group {
   id: string,
-  name: string | null,
+  name?: string,
   users: UserIdentity[],
   policies: PolicyIdentity[],
 }
