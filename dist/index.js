@@ -27,7 +27,7 @@ export const SortPoliciesByValues = [
 ];
 export const SortSessionsByValues = [
     "id" /* SortSessionsBy.SORT_SESSIONS_BY_ID */,
-    "user_id" /* SortSessionsBy.SORT_SESSIONS_BY_USER_ID */,
+    "user" /* SortSessionsBy.SORT_SESSIONS_BY_USER_ID */,
     "address" /* SortSessionsBy.SORT_SESSIONS_BY_ADDRESS */,
     "expiration" /* SortSessionsBy.SORT_SESSIONS_BY_EXPIRATION */,
 ];

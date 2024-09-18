@@ -89,7 +89,7 @@ export const SortPoliciesByValues = [
 
 export const enum SortSessionsBy {
   SORT_SESSIONS_BY_ID = 'id',
-  SORT_SESSIONS_BY_USER_ID = 'user_id',
+  SORT_SESSIONS_BY_USER_ID = 'user',
   SORT_SESSIONS_BY_ADDRESS = 'address',
   SORT_SESSIONS_BY_EXPIRATION = 'expiration',
 }
