@@ -177,7 +177,7 @@ describe('IAM', () => {
   });
 
   it('should list user sessions', async () => {
-    const sessions = await iam.sessions.listSessions();
+    const sessions = await iam.userSessions.listSessions();
     expect(sessions).toBeDefined();
     expect(sessions.items).toBeDefined();
     expect(sessions.offset).toBeDefined();
@@ -185,12 +185,14 @@ describe('IAM', () => {
     expect(sessions.total).toBeDefined();
   });
 
-  it('should create, get, refresh, and delete a session', async () => {
-    const session = await iam.sessions.createSession();
+  it('should create, get, refresh, and delete a user session', async () => {
+    const session = await iam.userSessions.createSession();
     expect(session).toBeDefined();
-    const fetched = await iam.sessions.getSession(session.id);
-    expect(fetched).toBeDefined();
-    await iam.sessions.refreshSession(session.id);
-    await iam.sessions.deleteSession(session.id);
+    const fetched1 = await iam.userSessions.getSession(session.id);
+    expect(fetched1).toBeDefined();
+    const fetched2 = await iam.sessions.getSession(session.id);
+    expect(fetched2).toBeDefined();
+    await iam.userSessions.refreshSession(session.id);
+    await iam.userSessions.deleteSession(session.id);
   });
 });

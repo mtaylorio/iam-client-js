@@ -87,6 +87,22 @@ export const SortPoliciesByValues = [
 ];
 
 
+export const enum SortSessionsBy {
+  SORT_SESSIONS_BY_ID = 'id',
+  SORT_SESSIONS_BY_USER_ID = 'user_id',
+  SORT_SESSIONS_BY_ADDRESS = 'address',
+  SORT_SESSIONS_BY_EXPIRATION = 'expiration',
+}
+
+
+export const SortSessionsByValues = [
+  SortSessionsBy.SORT_SESSIONS_BY_ID,
+  SortSessionsBy.SORT_SESSIONS_BY_USER_ID,
+  SortSessionsBy.SORT_SESSIONS_BY_ADDRESS,
+  SortSessionsBy.SORT_SESSIONS_BY_EXPIRATION,
+];
+
+
 export interface UserIdentity {
   id: string,
   name?: string,
@@ -282,6 +298,7 @@ export default class IAM {
   public policies: PoliciesClient;
   public sessions: SessionsClient;
   public publicKeys: PublicKeysClient;
+  public userSessions: UserSessionsClient;
 
   constructor(
     protocol: string = DEFAULT_PROTOCOL,
@@ -299,6 +316,7 @@ export default class IAM {
     this.policies = new PoliciesClient(this);
     this.sessions = new SessionsClient(this);
     this.publicKeys = new PublicKeysClient(this);
+    this.userSessions = new UserSessionsClient(this);
   }
 
   async login(
@@ -824,6 +842,62 @@ export class PoliciesClient {
 
 
 export class SessionsClient {
+  private iam: IAM;
+
+  constructor(iam: IAM) {
+    this.iam = iam;
+  }
+
+  async listSessions(
+    search: string | null = null,
+    sortBy: SortSessionsBy | null = null,
+    sortOrder: SortOrder | null = null,
+    offset: number | null = null,
+    limit: number | null = null,
+  ): Promise<SessionsResponse> {
+    const params = new URLSearchParams();
+
+    if (search) {
+      params.append('search', search);
+    }
+
+    if (sortBy) {
+      params.append('sort', sortBy);
+    }
+
+    if (sortOrder) {
+      params.append('order', sortOrder);
+    }
+
+    if (offset !== null) {
+      params.append('offset', offset.toString());
+    }
+
+    if (limit !== null) {
+      params.append('limit', limit.toString());
+    }
+
+    const query = '?' + params.toString();
+    const response = await this.iam.request('GET', '/sessions', query);
+    return response.data;
+  }
+
+  async getSession(
+    id: string,
+  ): Promise<Session> {
+    const response = await this.iam.request('GET', `/sessions/${id}`);
+    return response.data;
+  }
+
+  async deleteSession(
+    id: string,
+  ): Promise<void> {
+    await this.iam.request('DELETE', `/sessions/${id}`);
+  }
+}
+
+
+export class UserSessionsClient {
   private iam: IAM;
 
   constructor(iam: IAM) {

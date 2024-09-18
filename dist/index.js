@@ -25,6 +25,12 @@ export const SortPoliciesByValues = [
     "id" /* SortPoliciesBy.SORT_POLICIES_BY_ID */,
     "name" /* SortPoliciesBy.SORT_POLICIES_BY_NAME */,
 ];
+export const SortSessionsByValues = [
+    "id" /* SortSessionsBy.SORT_SESSIONS_BY_ID */,
+    "user_id" /* SortSessionsBy.SORT_SESSIONS_BY_USER_ID */,
+    "address" /* SortSessionsBy.SORT_SESSIONS_BY_ADDRESS */,
+    "expiration" /* SortSessionsBy.SORT_SESSIONS_BY_EXPIRATION */,
+];
 export function rule(effect, action, resource) {
     return { action, effect, resource };
 }
@@ -63,6 +69,7 @@ export default class IAM {
     policies;
     sessions;
     publicKeys;
+    userSessions;
     constructor(protocol = DEFAULT_PROTOCOL, host = DEFAULT_HOST, port = DEFAULT_PORT) {
         this.protocol = protocol.endsWith(':') ? protocol.slice(0, -1) : protocol;
         this.host = host;
@@ -74,6 +81,7 @@ export default class IAM {
         this.policies = new PoliciesClient(this);
         this.sessions = new SessionsClient(this);
         this.publicKeys = new PublicKeysClient(this);
+        this.userSessions = new UserSessionsClient(this);
     }
     async login(userId, secretKey = null) {
         if (secretKey === null || secretKey === '') {
@@ -127,6 +135,7 @@ export default class IAM {
     }
     async logout() {
         const sessionId = this.sessionId;
+        await this.request('DELETE', `/user/sessions/${sessionId}`);
         this.userId = null;
         this.secretKey = null;
         this.publicKey = null;
@@ -135,7 +144,6 @@ export default class IAM {
         this.sessionExpires = null;
         this.sessionAddress = null;
         this.sessionUserId = null;
-        await this.request('DELETE', `/user/sessions/${sessionId}`);
     }
     async refresh(userId = null, secretKey = null, sessionId = null, sessionToken = null) {
         await sodium.ready;
@@ -434,6 +442,40 @@ export class PoliciesClient {
     }
 }
 export class SessionsClient {
+    iam;
+    constructor(iam) {
+        this.iam = iam;
+    }
+    async listSessions(search = null, sortBy = null, sortOrder = null, offset = null, limit = null) {
+        const params = new URLSearchParams();
+        if (search) {
+            params.append('search', search);
+        }
+        if (sortBy) {
+            params.append('sort', sortBy);
+        }
+        if (sortOrder) {
+            params.append('order', sortOrder);
+        }
+        if (offset !== null) {
+            params.append('offset', offset.toString());
+        }
+        if (limit !== null) {
+            params.append('limit', limit.toString());
+        }
+        const query = '?' + params.toString();
+        const response = await this.iam.request('GET', '/sessions', query);
+        return response.data;
+    }
+    async getSession(id) {
+        const response = await this.iam.request('GET', `/sessions/${id}`);
+        return response.data;
+    }
+    async deleteSession(id) {
+        await this.iam.request('DELETE', `/sessions/${id}`);
+    }
+}
+export class UserSessionsClient {
     iam;
     constructor(iam) {
         this.iam = iam;

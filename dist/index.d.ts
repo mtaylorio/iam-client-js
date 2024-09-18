@@ -36,6 +36,13 @@ export declare const enum SortPoliciesBy {
     SORT_POLICIES_BY_NAME = "name"
 }
 export declare const SortPoliciesByValues: SortPoliciesBy[];
+export declare const enum SortSessionsBy {
+    SORT_SESSIONS_BY_ID = "id",
+    SORT_SESSIONS_BY_USER_ID = "user_id",
+    SORT_SESSIONS_BY_ADDRESS = "address",
+    SORT_SESSIONS_BY_EXPIRATION = "expiration"
+}
+export declare const SortSessionsByValues: SortSessionsBy[];
 export interface UserIdentity {
     id: string;
     name?: string;
@@ -173,6 +180,7 @@ export default class IAM {
     policies: PoliciesClient;
     sessions: SessionsClient;
     publicKeys: PublicKeysClient;
+    userSessions: UserSessionsClient;
     constructor(protocol?: string, host?: string, port?: number | null);
     login(userId: string, secretKey?: Uint8Array | string | null): Promise<void>;
     loginRequest(userId: string, description?: string): Promise<void>;
@@ -241,6 +249,13 @@ export declare class PoliciesClient {
     listPolicies(search?: string | null, sortBy?: SortPoliciesBy | null, sortOrder?: SortOrder | null, offset?: number | null, limit?: number | null): Promise<PoliciesResponse>;
 }
 export declare class SessionsClient {
+    private iam;
+    constructor(iam: IAM);
+    listSessions(search?: string | null, sortBy?: SortSessionsBy | null, sortOrder?: SortOrder | null, offset?: number | null, limit?: number | null): Promise<SessionsResponse>;
+    getSession(id: string): Promise<Session>;
+    deleteSession(id: string): Promise<void>;
+}
+export declare class UserSessionsClient {
     private iam;
     constructor(iam: IAM);
     createSession(userId?: string | null): Promise<CreateSession>;
